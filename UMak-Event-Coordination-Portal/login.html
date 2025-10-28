@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMak ECP - Login Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 50%, #1e3a5f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+            border-top: 6px solid #2c5aa0;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 30px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><pattern id="grain" width="100" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>');
+            opacity: 0.1;
+        }
+        
+        .umak-logo {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .umak-logo h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: -1px;
+        }
+        
+        .umak-logo p {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .umak-logo small {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            display: block;
+            margin-top: 8px;
+        }
+        
+        .login-form {
+            padding: 40px 30px;
+        }
+        
+        .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-title h2 {
+            color: #1e3a5f;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .login-title p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e8f0f8;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fafbfd;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #2c5aa0;
+            box-shadow: 0 0 0 6px rgba(44, 90, 160, 0.1);
+            background: white;
+            transform: translateY(-2px);
+        }
+        
+        .form-group input::placeholder {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 100%);
+            color: white;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(30, 58, 95, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .login-btn:hover:not(:disabled)::before {
+            left: 100%;
+        }
+        
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(30, 58, 95, 0.4);
+        }
+        
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            border-left: 4px solid;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .alert-success {
+            background: #e8f5e8;
+            color: #1b5e20;
+            border-left-color: #4caf50;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .alert-error {
+            background: #ffebee;
+            color: #b71c1c;
+            border-left-color: #f44336;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .user-type-toggle {
+            display: flex;
+            background: #f0f4f8;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            border: 1px solid #e0e8f0;
+        }
+        
+        .user-type-btn {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .user-type-btn.active {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(30, 58, 95, 0.3);
+        }
+        
+        .password-help {
+            background: #f8fafe;
+            border: 1px solid #e0e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .password-help h4 {
+            color: #1e3a5f;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .password-help .example {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            color: #2c5aa0;
+            font-weight: 600;
+        }
+        
+        .footer-info {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafe;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #e8f0f8;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 10px;
+            }
+            
+            .login-header {
+                padding: 30px 20px 20px;
+            }
+            
+            .umak-logo h1 {
+                font-size: 2.5rem;
+            }
+            
+            .login-form {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="umak-logo">
+                <h1>ECP</h1>
+                <p>Event Coordination Portal</p>
+                <small>University of Makati</small>
+            </div>
+        </div>
+        
+        <div class="login-form">
+            <div class="login-title">
+                <h2>Portal Login</h2>
+                <p>Access your personalized dashboard</p>
+            </div>
+            
+            <div class="user-type-toggle">
+                <button class="user-type-btn active" id="adminBtn" onclick="setUserType('admin')">
+                    Administrator
+                </button>
+                <button class="user-type-btn" id="studentBtn" onclick="setUserType('student')">
+                    Student
+                </button>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label id="usernameLabel">Employee Number</label>
+                    <input type="text" id="username" name="username" placeholder="E001" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="login-btn" id="loginButton">
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="password-help">
+                <h4>Password Format:</h4>
+                <p>First letter of last name + Full first name + Last 3 digits of your number</p>
+                <div class="example">
+                    Example: LMaria001 (Lopez, Maria, E001)
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-info">
+            <p>&copy; 2025 University of Makati. All rights reserved.</p>
+            <p>For technical support, contact IT Department</p>
+        </div>
+    </div>
+    
+<script>
+    // API Configuration
+    const API_BASE = './api';   
+    let currentUserType = 'admin';
+    
+    // Set user type and update UI
+    function setUserType(type) {
+        currentUserType = type;
+        
+        // Update button states
+        document.getElementById('adminBtn').classList.toggle('active', type === 'admin');
+        document.getElementById('studentBtn').classList.toggle('active', type === 'student');
+        
+        // Update labels and placeholders
+        const usernameLabel = document.getElementById('usernameLabel');
+        const usernameInput = document.getElementById('username');
+        const example = document.querySelector('.example');
+        
+        if (type === 'admin') {
+            usernameLabel.textContent = 'Employee Number';
+            usernameInput.placeholder = 'E001';
+            example.textContent = 'Example: LMaria001 (Lopez, Maria, E001)';
+        } else {
+            usernameLabel.textContent = 'Student Number';
+            usernameInput.placeholder = 'A12139502';
+            example.textContent = 'Example: FJerecho502 (Framil, Jerecho, A12139502)';
+        }
+        
+        // Clear form
+        document.getElementById('loginForm').reset();
+        clearAlerts();
+    }
+    
+    // Login form handler
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const loginButton = document.getElementById('loginButton');
+        
+        if (!username || !password) {
+            showAlert('Please enter both username and password.', 'error');
+            return;
+        }
+        
+        // Disable button and show loading state
+        loginButton.disabled = true;
+        loginButton.innerHTML = '<span class="spinner"></span>Signing In...';
+        
+        try {
+            const response = await fetch(`${API_BASE}/login.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    user_type: currentUserType
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+    // Store user session data
+    localStorage.setItem('user_session', JSON.stringify({
+        user_id: result.user.user_id,
+        user_type: result.user.user_type,
+        username: result.user.username,
+        firstname: result.user.firstname,
+        lastname: result.user.lastname,
+        email: result.user.email,
+        department: result.user.department,
+        position: result.user.position,
+        login_time: new Date().toISOString()
+    }));
+    
+    showAlert('Login successful! Redirecting...', 'success');
+    
+    // Redirect based on user type - CORRECTED
+    setTimeout(() => {
+        if (result.user.user_type === 'admin') {
+            window.location.replace('pages/admin/admin_dashboard.html');
+        } else {
+            window.location.replace('pages/student/student_dashboard.html');
+            }
+        }, 1500);
+    } else {
+                showAlert(result.message || 'Invalid credentials. Please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            showAlert('Connection error. Please check if XAMPP is running and try again.', 'error');
+        } finally {
+            loginButton.disabled = false;
+            loginButton.innerHTML = 'Sign In';
+        }
+    });
+    
+    // Utility functions
+    function showAlert(message, type) {
+        clearAlerts();
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+        
+        const form = document.getElementById('loginForm');
+        form.insertBefore(alertDiv, form.firstChild);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+    
+    function clearAlerts() {
+        const existingAlerts = document.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+    }
+    
+    // Check if user is already logged in
+    document.addEventListener('DOMContentLoaded', function() {
+        const session = localStorage.getItem('user_session');
+        if (session) {
+            const userData = JSON.parse(session);
+            const loginTime = new Date(userData.login_time);
+            const currentTime = new Date();
+            const hoursDiff = (currentTime - loginTime) / (1000 * 60 * 60);
+            
+            // Check if session is still valid (less than 8 hours)
+            // Check if session is still valid (less than 8 hours)
+        if (hoursDiff < 8) {
+            showAlert('You are already logged in. Redirecting...', 'success');
+            setTimeout(() => {
+                if (userData.user_type === 'admin') {
+                    window.location.replace('pages/admin/admin_dashboard.html');
+                } else {
+                    window.location.replace('pages/student/student_dashboard.html');
+                }
+            }, 1500);
+        } else {
+                // Clear expired session
+                localStorage.removeItem('user_session');
+            }
+        }
+    });
+    
+    // Add demo credentials display (remove in production)
+    document.addEventListener('DOMContentLoaded', function() {
+        const demoDiv = document.createElement('div');
+        demoDiv.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+            max-width: 300px;
+        `;
+        demoDiv.innerHTML = `
+            <strong>Demo Credentials:</strong><br>
+            <strong>Admin:</strong> E001 / LMaria001<br>
+            <strong>Student:</strong> A12139502 / FJerecho502<br>
+            <em>Click to hide</em>
+        `;
+        demoDiv.onclick = () => demoDiv.remove();
+        document.body.appendChild(demoDiv);
+    });
+</script>
+</body>
+</html>

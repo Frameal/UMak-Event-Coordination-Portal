@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University of Makati – Event Coordination Portal (UMak ECP)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 50%, #1e3a5f 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            border-top: 4px solid #1e3a5f;
+        }
+        
+        .header h1 {
+            color: #1e3a5f;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        
+        .header p {
+            color: #2c5aa0;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        
+        .umak-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .umak-logo::before {
+            content: "🏛️";
+            font-size: 2rem;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+            border: 1px solid rgba(46, 90, 160, 0.2);
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 16px 20px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            color: #1e3a5f;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-tab.active {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(30, 58, 95, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .nav-tab:hover:not(.active) {
+            background: rgba(30, 58, 95, 0.08);
+            color: #1e3a5f;
+            transform: translateY(-1px);
+        }
+        
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            border: 1px solid rgba(46, 90, 160, 0.1);
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
+        }
+        
+        .tab-content h2 {
+            color: #1e3a5f;
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            font-weight: 700;
+            border-bottom: 3px solid #2c5aa0;
+            padding-bottom: 10px;
+        }
+        
+        .tab-content h3 {
+            color: #2c5aa0;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 22px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 15px;
+        }
+        
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8f0f8;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fafbfd;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2c5aa0;
+            box-shadow: 0 0 0 4px rgba(44, 90, 160, 0.1);
+            background: white;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(30, 58, 95, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover:not(:disabled)::before {
+            left: 100%;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 58, 95, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #c62828 0%, #d32f2f 100%);
+            box-shadow: 0 4px 15px rgba(198, 40, 40, 0.3);
+        }
+        
+        .btn-danger:hover:not(:disabled) {
+            box-shadow: 0 8px 25px rgba(198, 40, 40, 0.4);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+            margin-top: 25px;
+            border: 1px solid #e8f0f8;
+        }
+        
+        .table th, .table td {
+            padding: 16px 18px;
+            text-align: left;
+            border-bottom: 1px solid #f0f4f8;
+        }
+        
+        .table th {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table tr:hover {
+            background: rgba(44, 90, 160, 0.04);
+        }
+        
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-published { 
+            background: #e8f5e8; 
+            color: #2e7d32; 
+            border: 1px solid #a5d6a7;
+        }
+        
+        .status-registration-open { 
+            background: #e3f2fd; 
+            color: #1565c0; 
+            border: 1px solid #90caf9;
+        }
+        
+        .status-completed { 
+            background: #f3e5f5; 
+            color: #7b1fa2; 
+            border: 1px solid #ce93d8;
+        }
+        
+        .status-cancelled { 
+            background: #ffebee; 
+            color: #c62828; 
+            border: 1px solid #ef9a9a;
+        }
+        
+        .status-registered { 
+            background: #e8f5e8; 
+            color: #2e7d32; 
+            border: 1px solid #a5d6a7;
+        }
+        
+        .status-draft { 
+            background: #fff8e1; 
+            color: #f57c00; 
+            border: 1px solid #ffcc02;
+        }
+        
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+        
+        .alert-success {
+            background: #e8f5e8;
+            color: #1b5e20;
+            border-left-color: #4caf50;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .alert-error {
+            background: #ffebee;
+            color: #b71c1c;
+            border-left-color: #f44336;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #e8f0f8;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #1e3a5f 0%, #2c5aa0 100%);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        
+        .card h3 {
+            color: #1e3a5f;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .card p {
+            font-size: 2.5rem !important;
+            font-weight: 700 !important;
+            color: #2c5aa0 !important;
+            margin: 0;
+        }
+        
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* UMak Professional Styling */
+        .umak-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 100%);
+            color: white;
+            padding: 15px 0;
+            margin: -20px -20px 30px -20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .umak-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><pattern id="grain" width="100" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>');
+            opacity: 0.1;
+        }
+        
+        .umak-branding {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .umak-branding h1 {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .umak-branding p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .nav-tab {
+                flex: 1 1 calc(50% - 4px);
+                margin-bottom: 0;
+                min-width: 120px;
+            }
+            
+            .two-col {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+            
+            .card-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .tab-content {
+                padding: 25px 20px;
+            }
+            
+            .tab-content h2 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* Professional Form Styling */
+        .form-section {
+            background: #f8fafe;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2c5aa0;
+        }
+        
+        /* Enhanced Status Indicators */
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .connection-status.connected {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .connection-status.disconnected {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .connection-status::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="umak-logo">
+                <div class="umak-branding">
+                    <h1>ECP</h1>
+                    <p>University of Makati – Event Coordination Portal</p>
+                    <div style="margin-top: 15px; font-size: 0.9rem; color: #1e3a5f; font-weight: 500;">
+                        Streamlining event planning and participation across the University of Makati
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('dashboard')">Dashboard</button>
+            <button class="nav-tab" onclick="showTab('students')">Students</button>
+            <button class="nav-tab" onclick="showTab('events')">Events</button>
+            <button class="nav-tab" onclick="showTab('venues')">Venues</button>
+            <button class="nav-tab" onclick="showTab('registrations')">Registrations</button>
+        </div>
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <h2>System Dashboard</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <h3>📚 Total Students</h3>
+                    <p id="total-students" style="font-size: 2rem; font-weight: bold; color: #667eea;">5</p>
+                </div>
+                <div class="card">
+                    <h3>🎉 Total Events</h3>
+                    <p id="total-events" style="font-size: 2rem; font-weight: bold; color: #667eea;">5</p>
+                </div>
+                <div class="card">
+                    <h3>🏢 Total Venues</h3>
+                    <p id="total-venues" style="font-size: 2rem; font-weight: bold; color: #667eea;">6</p>
+                </div>
+                <div class="card">
+                    <h3>✅ Total Registrations</h3>
+                    <p id="total-registrations" style="font-size: 2rem; font-weight: bold; color: #667eea;">7</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Students Tab -->
+        <div id="students" class="tab-content">
+            <h2>Student Management</h2>
+            
+            <div class="two-col">
+                <div>
+                    <h3>Add New Student</h3>
+                    <form id="studentForm">
+                        <div class="form-group">
+                            <label>Student Number:</label>
+                            <input type="text" name="student_number" required placeholder="A12139502">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name:</label>
+                            <input type="text" name="lastname" required placeholder="Framil">
+                        </div>
+                        <div class="form-group">
+                            <label>First Name:</label>
+                            <input type="text" name="firstname" required placeholder="Jerecho">
+                        </div>
+                        <div class="form-group">
+                            <label>Middle Name:</label>
+                            <input type="text" name="middlename" placeholder="G">
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" name="email" required placeholder="jframil.a12139502@umak.edu.ph">
+                        </div>
+                        <div class="form-group">
+                            <label>Gender:</label>
+                            <select name="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Year Level:</label>
+                            <select name="year_level">
+                                <option value="">Select Year</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Course:</label>
+                            <input type="text" name="course" placeholder="Computer Science">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number:</label>
+                            <input type="text" name="contact_number" placeholder="09563179622" maxlength="11">
+                        </div>
+                        <button type="submit" class="btn">Add Student</button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3>Students List</h3>
+                    <div id="students-list">
+                        <p>Click "Connect to Database" to load students from MySQL</p>
+                        <button onclick="loadStudents()" class="btn">Connect to Database</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Events Tab -->
+        <div id="events" class="tab-content">
+            <h2>Event Management</h2>
+            
+            <div class="two-col">
+                <div>
+                    <h3>Create New Event</h3>
+                    <form id="eventForm">
+                        <div class="form-group">
+                            <label>Event Name:</label>
+                            <input type="text" name="event_name" required placeholder="Web Development Workshop">
+                        </div>
+                        <div class="form-group">
+                            <label>Description:</label>
+                            <textarea name="description" rows="3" placeholder="Event description..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Event Date:</label>
+                            <input type="date" name="event_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Start Time:</label>
+                            <input type="time" name="start_time" required>
+                        </div>
+                        <div class="form-group">
+                            <label>End Time:</label>
+                            <input type="time" name="end_time" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Venue:</label>
+                            <select name="venue_id" required id="venue-select">
+                                <option value="">Select Venue</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Attendees Capacity:</label>
+                            <input type="number" name="attendees_capacity" required min="1" placeholder="100">
+                        </div>
+                        <button type="submit" class="btn">Create Event</button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3>Events List</h3>
+                    <div id="events-list">
+                        <p>Click "Connect to Database" to load events from MySQL</p>
+                        <button onclick="loadEvents()" class="btn">Connect to Database</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Venues Tab -->
+        <div id="venues" class="tab-content">
+            <h2>Venue Management</h2>
+            
+            <div class="two-col">
+                <div>
+                    <h3>Add New Venue</h3>
+                    <form id="venueForm">
+                        <div class="form-group">
+                            <label>Venue Name:</label>
+                            <input type="text" name="venue_name" required placeholder="UPAT">
+                        </div>
+                        <div class="form-group">
+                            <label>Capacity:</label>
+                            <input type="number" name="capacity" required min="1" placeholder="1000">
+                        </div>
+                        <div class="form-group">
+                            <label>Location:</label>
+                            <input type="text" name="location" placeholder="Upper Campus">
+                        </div>
+                        <div class="form-group">
+                            <label>Facilities:</label>
+                            <textarea name="facilities" rows="3" placeholder="Audio system, Projector, Stage"></textarea>
+                        </div>
+                        <button type="submit" class="btn">Add Venue</button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3>Venues List</h3>
+                    <div id="venues-list">
+                        <p>Click "Connect to Database" to load venues from MySQL</p>
+                        <button onclick="loadVenues()" class="btn">Connect to Database</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Registrations Tab -->
+        <div id="registrations" class="tab-content">
+            <h2>Event Registration</h2>
+            
+            <div class="two-col">
+                <div>
+                    <h3>Register Student for Event</h3>
+                    <form id="registrationForm">
+                        <div class="form-group">
+                            <label>Student:</label>
+                            <select name="student_id" required id="student-select">
+                                <option value="">Select Student</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Event:</label>
+                            <select name="event_id" required id="event-select">
+                                <option value="">Select Event</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn">Register Student</button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3>Registrations List</h3>
+                    <div id="registrations-list">
+                        <p>Click "Connect to Database" to load registrations from MySQL</p>
+                        <button onclick="loadRegistrations()" class="btn">Connect to Database</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // API Configuration
+        const API_BASE = './api';
+        
+        // Check if we can connect to the database
+        let isConnected = false;
+        
+        // Enhanced API call function with better error handling
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const url = `${API_BASE}/${endpoint}`;
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+            
+            if (data && method !== 'GET') {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                console.log(`Making ${method} request to ${url}`, data ? data : '');
+                
+                const response = await fetch(url, options);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log(`${method} response from ${endpoint}:`, result);
+                
+                isConnected = true;
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                showAlert('Connection error. Make sure XAMPP is running and PHP files are in place.', 'error');
+                throw error;
+            }
+        }
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        async function loadDashboard() {
+            try {
+                const stats = await apiCall('dashboard.php');
+                document.getElementById('total-students').textContent = stats.total_students || '0';
+                document.getElementById('total-events').textContent = stats.total_events || '0';
+                document.getElementById('total-venues').textContent = stats.total_venues || '0';
+                document.getElementById('total-registrations').textContent = stats.total_registrations || '0';
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+        
+        async function loadStudents() {
+            const container = document.getElementById('students-list');
+            container.innerHTML = 'Loading students from MySQL...';
+            
+            try {
+                const students = await apiCall('students.php');
+                
+                if (!students || students.length === 0) {
+                    container.innerHTML = '<p>No students found in database. Add your first student!</p>';
+                    return;
+                }
+                
+                const html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Student #</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Course</th>
+                                <th>Year</th>
+                                <th>Contact</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${students.map(student => `
+                                <tr>
+                                    <td><strong>${student.student_number}</strong></td>
+                                    <td>${student.lastname}, ${student.firstname} ${student.middlename || ''}</td>
+                                    <td>${student.email}</td>
+                                    <td>${student.course || 'N/A'}</td>
+                                    <td>${student.year_level ? student.year_level + getOrdinalSuffix(student.year_level) + ' Year' : 'N/A'}</td>
+                                    <td>${student.contact_number || 'N/A'}</td>
+                                    <td>
+                                        <button class="btn btn-danger" onclick="deleteStudent(${student.student_id})">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                container.innerHTML = html;
+                loadStudentsDropdown(); // Refresh dropdown
+            } catch (error) {
+                container.innerHTML = '<p style="color: red;">Error: Could not connect to database. Make sure XAMPP is running and API files are in place.</p>';
+            }
+        }
+        
+        async function loadEvents() {
+            const container = document.getElementById('events-list');
+            container.innerHTML = 'Loading events from MySQL...';
+            
+            try {
+                const events = await apiCall('events.php');
+                
+                if (!events || events.length === 0) {
+                    container.innerHTML = '<p>No events found. Create your first event!</p>';
+                    return;
+                }
+                
+                const html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Date & Time</th>
+                                <th>Venue</th>
+                                <th>Capacity</th>
+                                <th>Registered</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${events.map(event => `
+                                <tr>
+                                    <td>
+                                        <strong>${event.event_name}</strong>
+                                        ${event.description ? '<br><small style="color: #666;">' + event.description.substring(0, 50) + '...</small>' : ''}
+                                    </td>
+                                    <td>
+                                        ${formatDate(event.event_date)}<br>
+                                        <small>${formatTime(event.start_time)} - ${formatTime(event.end_time)}</small>
+                                    </td>
+                                    <td>${event.venue_name || 'Unknown'}</td>
+                                    <td>${event.attendees_capacity}</td>
+                                    <td><strong>${event.registered_count || 0}</strong></td>
+                                    <td><span class="status-badge status-${(event.status || 'draft').toLowerCase().replace(' ', '-')}">${event.status || 'Draft'}</span></td>
+                                    <td>
+                                        <button class="btn btn-danger" onclick="deleteEvent(${event.event_id})">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                container.innerHTML = html;
+                loadVenuesDropdown();
+                loadEventsDropdown();
+            } catch (error) {
+                container.innerHTML = '<p style="color: red;">Error: Could not connect to database. Make sure XAMPP is running and API files are in place.</p>';
+            }
+        }
+        
+        async function loadVenues() {
+            const container = document.getElementById('venues-list');
+            container.innerHTML = 'Loading venues from MySQL...';
+            
+            try {
+                const venues = await apiCall('venues.php');
+                
+                const html = `
+                    <table class="table">f
+                        <thead>
+                            <tr>
+                                <th>Venue Name</th>
+                                <th>Capacity</th>
+                                <th>Location</th>
+                                <th>Facilities</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${venues.map(venue => `
+                                <tr>
+                                    <td><strong>${venue.venue_name}</strong></td>
+                                    <td>${venue.capacity}</td>
+                                    <td>${venue.location || 'N/A'}</td>
+                                    <td>${venue.facilities || 'N/A'}</td>
+                                    <td>
+                                        <button class="btn btn-danger" onclick="deleteVenue(${venue.venue_id})">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                container.innerHTML = html;
+                loadVenuesDropdown();
+            } catch (error) {
+                container.innerHTML = '<p style="color: red;">Error: Could not connect to database. Make sure XAMPP is running and API files are in place.</p>';
+            }
+        }
+        
+        async function loadRegistrations() {
+            const container = document.getElementById('registrations-list');
+            container.innerHTML = 'Loading registrations from MySQL...';
+            
+            try {
+                const registrations = await apiCall('registrations.php');
+                
+                if (!registrations || registrations.length === 0) {
+                    container.innerHTML = '<p>No registrations found. Register students for events!</p>';
+                    return;
+                }
+                
+                const html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Event</th>
+                                <th>Registration Date</th>
+                                <th>QR Code</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${registrations.map(reg => `
+                                <tr>
+                                    <td>
+                                        <strong>${reg.lastname}, ${reg.firstname}</strong><br>
+                                        <small style="color: #666;">${reg.student_number}</small>
+                                    </td>
+                                    <td>
+                                        <strong>${reg.event_name}</strong><br>
+                                        <small style="color: #666;">${formatDate(reg.event_date)}</small>
+                                    </td>
+                                    <td>${formatDate(reg.registration_date)}</td>
+                                    <td><code style="background: #f5f5f5; padding: 2px 6px; border-radius: 4px;">${reg.qr_code}</code></td>
+                                    <td><span class="status-badge status-${(reg.status || 'registered').toLowerCase()}">${reg.status || 'Registered'}</span></td>
+                                    <td>
+                                        <button class="btn btn-danger" onclick="deleteRegistration(${reg.registration_id})">Cancel</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<p style="color: red;">Error: Could not connect to database. Make sure XAMPP is running and API files are in place.</p>';
+            }
+        }
+        
+        async function loadVenuesDropdown() {
+            const select = document.getElementById('venue-select');
+            try {
+                const venues = await apiCall('venues.php');
+                select.innerHTML = '<option value="">Select Venue</option>' +
+                    venues.map(venue => `<option value="${venue.venue_id}">${venue.venue_name} (Capacity: ${venue.capacity})</option>`).join('');
+            } catch (error) {
+                select.innerHTML = '<option value="">Error loading venues</option>';
+            }
+        }
+        
+        async function loadStudentsDropdown() {
+            const select = document.getElementById('student-select');
+            try {
+                const students = await apiCall('students.php');
+                select.innerHTML = '<option value="">Select Student</option>' +
+                    students.map(student => `<option value="${student.student_id}">${student.lastname}, ${student.firstname} (${student.student_number})</option>`).join('');
+            } catch (error) {
+                select.innerHTML = '<option value="">Error loading students</option>';
+            }
+        }
+        
+        async function loadEventsDropdown() {
+            const select = document.getElementById('event-select');
+            try {
+                const events = await apiCall('events.php');
+                const upcomingEvents = events.filter(event => new Date(event.event_date) >= new Date().setHours(0,0,0,0));
+                select.innerHTML = '<option value="">Select Event</option>' +
+                    upcomingEvents.map(event => `<option value="${event.event_id}">${event.event_name} (${formatDate(event.event_date)})</option>`).join('');
+            } catch (error) {
+                select.innerHTML = '<option value="">Error loading events</option>';
+            }
+        }
+        
+        // FIXED Form handlers
+        // Student Form Handler
+        document.getElementById('studentForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // This prevents the default form submission
+            e.stopPropagation(); // This stops event bubbling
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+            
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner"></span>Adding...';
+            
+            try {
+                // Convert FormData to JSON object
+                const studentData = {};
+                formData.forEach((value, key) => {
+                    studentData[key] = value || null;
+                });
+                
+                console.log('Sending student data:', studentData); // Debug log
+                
+                const response = await fetch(`${API_BASE}/students.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(studentData)
+                });
+                
+                console.log('Response status:', response.status); // Debug log
+                
+                const result = await response.json();
+                console.log('Response data:', result); // Debug log
+                
+                if (result.message && result.message.includes('successfully')) {
+                    showAlert('Student added successfully to MySQL database!', 'success');
+                    form.reset();
+                    await loadStudents();
+                    await loadDashboard();
+                    await loadStudentsDropdown(); // Refresh dropdown
+                } else {
+                    showAlert(result.message || 'Error adding student', 'error');
+                }
+            } catch (error) {
+                console.error('Form submission error:', error);
+                showAlert('Error connecting to database. Check XAMPP and API files.', 'error');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Add Student';
+            }
+        });
+
+        // Event Form Handler
+        document.getElementById('eventForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+            
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner"></span>Creating...';
+            
+            try {
+                const eventData = {};
+                formData.forEach((value, key) => {
+                    eventData[key] = value || null;
+                });
+                
+                // Ensure status is set
+                eventData.status = 'Published';
+                
+                console.log('Sending event data:', eventData);
+                
+                const response = await fetch(`${API_BASE}/events.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(eventData)
+                });
+                
+                const result = await response.json();
+                console.log('Event response:', result);
+                
+                if (result.message && result.message.includes('successfully')) {
+                    showAlert('Event created successfully in MySQL database!', 'success');
+                    form.reset();
+                    await loadEvents();
+                    await loadDashboard();
+                    await loadEventsDropdown(); // Refresh dropdown
+                } else {
+                    showAlert(result.message || 'Error creating event', 'error');
+                }
+            } catch (error) {
+                console.error('Event form error:', error);
+                showAlert('Error connecting to database. Check XAMPP and API files.', 'error');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Create Event';
+            }
+        });
+
+        // Venue Form Handler
+        document.getElementById('venueForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+            
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner"></span>Adding...';
+            
+            try {
+                const venueData = {};
+                formData.forEach((value, key) => {
+                    venueData[key] = value || null;
+                });
+                
+                console.log('Sending venue data:', venueData);
+                
+                const response = await fetch(`${API_BASE}/venues.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(venueData)
+                });
+                
+                const result = await response.json();
+                console.log('Venue response:', result);
+                
+                if (result.message && result.message.includes('successfully')) {
+                    showAlert('Venue added successfully to MySQL database!', 'success');
+                    form.reset();
+                    await loadVenues();
+                    await loadDashboard();
+                    await loadVenuesDropdown(); // Refresh dropdown
+                } else {
+                    showAlert(result.message || 'Error adding venue', 'error');
+                }
+            } catch (error) {
+                console.error('Venue form error:', error);
+                showAlert('Error connecting to database. Check XAMPP and API files.', 'error');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Add Venue';
+            }
+        });
+
+        // Registration Form Handler
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+            
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner"></span>Registering...';
+            
+            try {
+                const registrationData = {};
+                formData.forEach((value, key) => {
+                    registrationData[key] = value || null;
+                });
+                
+                console.log('Sending registration data:', registrationData);
+                
+                const response = await fetch(`${API_BASE}/registrations.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(registrationData)
+                });
+                
+                const result = await response.json();
+                console.log('Registration response:', result);
+                
+                if (result.message && result.message.includes('successful')) {
+                    showAlert(`Student registered successfully! QR Code: ${result.qr_code}`, 'success');
+                    form.reset();
+                    await loadRegistrations();
+                    await loadDashboard();
+                } else {
+                    showAlert(result.message || 'Error registering student', 'error');
+                }
+            } catch (error) {
+                console.error('Registration form error:', error);
+                showAlert('Error connecting to database. Check XAMPP and API files.', 'error');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Register Student';
+            }
+        });
+        
+        // Delete functions
+        async function deleteStudent(id) {
+            if (!confirm('Are you sure you want to delete this student from the MySQL database?')) {
+                return;
+            }
+            
+            try {
+                const result = await apiCall(`students.php?id=${id}`, 'DELETE');
+                
+                if (result.message && result.message.includes('successfully')) {
+                    showAlert('Student deleted successfully from MySQL database!', 'success');
+                    loadStudents();
+                    loadDashboard();
+                } else {
+                    showAlert(result.message || 'Error deleting student', 'error');
+                }
+            } catch (error) {
+                showAlert('Error connecting to database. Check XAMPP and API files.', 'error');
+            }
+        }
+        
+        async function deleteEvent(id) {
+            if (!confirm('Are you sure you want to delete this event from the MySQL database?')) {
+                return;
+            }
+            
+            try {
+                const result = await apiCall(`events.php?id=${id}`, 'DELETE');
+                
+                if (result.message && result.message.includes('successfully')) {
+                    showAlert('Event deleted successfully from MySQL database!', 'success');
+                    loadEvents();
+                    loadDashboard();
+                } else {
+                    showAlert(result.message || 'Error deleting event', 'error');
+                }
+            } catch (error) {
+                showAlert('Error connecting to database. Check XAMPP and API files.', 'error');
+            }
+        }
+        
+        async function deleteVenue(id) {
+            if (!confirm('Are you sure you want to delete this venue from the MySQL database?')) {
+                return;
+            }
+            
+            try {
+                const result = await apiCall(`venues.php?id=${id}`, 'DELETE');
+                
+                if (result.message && result.message.includes('successfully')) {
+                    showAlert('Venue deleted successfully from MySQL database!', 'success');
+                    loadVenues();
+                    loadDashboard();
+                } else {
+                    showAlert(result.message || 'Error deleting venue', 'error');
+                }
+            } catch (error) {
+                showAlert('Error connecting to database. Check XAMPP and API files.', 'error');
+            }
+        }
+        
+        async function deleteRegistration(id) {
+            if (!confirm('Are you sure you want to cancel this registration in the MySQL database?')) {
+                return;
+            }
+            
+            try {
+                const result = await apiCall(`registrations.php?id=${id}`, 'DELETE');
+                
+                if (result.message && result.message.includes('successfully')) {
+                    showAlert('Registration cancelled successfully in MySQL database!', 'success');
+                    loadRegistrations();
+                    loadDashboard();
+                } else {
+                    showAlert(result.message || 'Error cancelling registration', 'error');
+                }
+            } catch (error) {
+                showAlert('Error connecting to database. Check XAMPP and API files.', 'error');
+            }
+        }
+        
+        // Utility functions
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            const container = document.querySelector('.tab-content.active');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+        
+        function formatTime(timeString) {
+            if (!timeString) return 'N/A';
+            return new Date('2000-01-01 ' + timeString).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+        
+        function getOrdinalSuffix(num) {
+            const j = num % 10;
+            const k = num % 100;
+            if (j == 1 && k != 11) return "st";
+            if (j == 2 && k != 12) return "nd";
+            if (j == 3 && k != 13) return "rd";
+            return "th";
+        }
+        
+        // Form validation and auto-generation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Contact number validation
+            const contactInput = document.querySelector('input[name="contact_number"]');
+            if (contactInput) {
+                contactInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                    if (value.length > 11) {
+                        value = value.substring(0, 11);
+                    }
+                    if (value.length > 0 && !value.startsWith('09')) {
+                        if (value.length === 1 && value === '0') {
+                            value = '09';
+                        } else if (!value.startsWith('09')) {
+                            value = '09' + value.substring(value.startsWith('0') ? 1 : 0);
+                        }
+                    }
+                    e.target.value = value;
+                });
+            }
+            
+            // Auto-generate email based on name and student number
+            const studentForm = document.getElementById('studentForm');
+            const studentNumber = studentForm.querySelector('input[name="student_number"]');
+            const firstname = studentForm.querySelector('input[name="firstname"]');
+            const lastname = studentForm.querySelector('input[name="lastname"]');
+            const email = studentForm.querySelector('input[name="email"]');
+            
+            function generateEmail() {
+                const studentNum = studentNumber.value;
+                const first = firstname.value.toLowerCase();
+                const last = lastname.value.toLowerCase();
+                
+                if (studentNum && first && last) {
+                    email.value = `${first.charAt(0)}${last}.${studentNum.toLowerCase()}@umak.edu.ph`;
+                }
+            }
+            
+            studentNumber.addEventListener('blur', generateEmail);
+            firstname.addEventListener('blur', generateEmail);
+            lastname.addEventListener('blur', generateEmail);
+            
+            // Try to connect to database on load
+            setTimeout(async () => {
+                try {
+                    await loadDashboard();
+                    console.log('Successfully connected to MySQL database!');
+                } catch (error) {
+                    console.log('Database not connected yet. Use the Connect to Database buttons.');
+                }
+            }, 1000);
+        });
+        
+        // Test database connection
+        async function testConnection() {
+            try {
+                const result = await apiCall('dashboard.php');
+                if (result) {
+                    showAlert('Successfully connected to MySQL database!', 'success');
+                    loadDashboard();
+                    return true;
+                }
+            } catch (error) {
+                showAlert('Cannot connect to database. Make sure XAMPP is running and API files are configured.', 'error');
+                return false;
+            }
+        }
+        
+        // Add test connection button to dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            const dashboard = document.getElementById('dashboard');
+            testBtn.className = 'btn';
+            testBtn.textContent = 'Test Database Connection';
+            testBtn.onclick = testConnection;
+            testBtn.style.marginTop = '20px';
+            dashboard.appendChild(testBtn);
+        });
+    </script>
+</body>
+</html>
