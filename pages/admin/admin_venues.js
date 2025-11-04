@@ -1,26 +1,13 @@
 const API_BASE = 'http://localhost/API';
 
 async function apiCall(endpoint, method = 'GET', data = null) {
-    const url = `${API_BASE}/${endpoint}`;
-    const options = {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    };
-    
-    if (data && method !== 'GET') {
-        options.body = JSON.stringify(data);
-    }
+    const options = { method, headers: { 'Content-Type': 'application/json' } };
+    if (data && method !== 'GET') options.body = JSON.stringify(data);
     
     try {
-        console.log(`API Call: ${method} ${url}`, data || '');
-        const response = await fetch(url, options);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
+        console.log(`API Call: ${method} ${API_BASE}/${endpoint}`, data || '');
+        const response = await fetch(`${API_BASE}/${endpoint}`, options);
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         return await response.json();
     } catch (error) {
         console.error('API Error:', error);
@@ -28,17 +15,16 @@ async function apiCall(endpoint, method = 'GET', data = null) {
     }
 }
 
-function showAlert(message, type) {
+const showAlert = (message, type) => {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type}`;
     alertDiv.textContent = message;
-    
     const container = document.querySelector('.tab-content.active');
     if (container) {
         container.insertBefore(alertDiv, container.firstChild);
         setTimeout(() => alertDiv.remove(), 5000);
     }
-}
+};
 
 async function loadVenues() {
     const container = document.getElementById('venues-list');
@@ -46,63 +32,33 @@ async function loadVenues() {
     
     try {
         const venues = await apiCall('venues.php');
-        
-        if (!venues || venues.length === 0) {
-            container.innerHTML = '<p style="text-align: center; padding: 20px;">No venues found. Add your first venue!</p>';
-            return;
-        }
-        
-        container.innerHTML = renderVenuesTable(venues);
+        container.innerHTML = !venues?.length ? 
+            '<p style="text-align: center; padding: 20px;">No venues found. Add your first venue!</p>' : 
+            renderVenuesTable(venues);
     } catch (error) {
-        showManualConnectButton('venues-list', loadVenues);
+        container.innerHTML = `<div style="text-align: center; padding: 40px;">
+            <p style="color: #666; margin-bottom: 20px;">Database connection failed. Make sure XAMPP is running.</p>
+            <button onclick="loadVenues()" class="btn">Connect to Database</button></div>`;
     }
 }
 
 function renderVenuesTable(venues) {
-    return `
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Venue Name</th>
-                    <th>Capacity</th>
-                    <th>Location</th>
-                    <th>Facilities</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${venues.map(v => `
-                    <tr>
-                        <td><strong>${v.venue_name}</strong></td>
-                        <td>${v.capacity}</td>
-                        <td>${v.location || 'N/A'}</td>
-                        <td>${v.facilities || 'N/A'}</td>
-                        <td>
-                            <button class="btn btn-danger" onclick="deleteVenue(${v.venue_id})">Delete</button>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
-}
-
-function showManualConnectButton(containerId, loadFunction) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = `
-        <div style="text-align: center; padding: 40px;">
-            <p style="color: #666; margin-bottom: 20px;">Database connection failed. Make sure XAMPP is running.</p>
-            <button onclick="${loadFunction.name}()" class="btn">Connect to Database</button>
-        </div>
-    `;
+    return `<table class="table"><thead><tr>
+        <th>Venue Name</th><th>Capacity</th><th>Location</th><th>Facilities</th><th>Actions</th>
+    </tr></thead><tbody>${venues.map(v => `<tr>
+        <td><strong>${v.venue_name}</strong></td>
+        <td>${v.capacity}</td>
+        <td>${v.location || 'N/A'}</td>
+        <td>${v.facilities || 'N/A'}</td>
+        <td><button class="btn btn-danger" onclick="deleteVenue(${v.venue_id})">Delete</button></td>
+    </tr>`).join('')}</tbody></table>`;
 }
 
 async function deleteVenue(id) {
     if (!confirm('Delete this venue from the database?')) return;
-    
     try {
         const result = await apiCall(`venues.php?id=${id}`, 'DELETE');
-        if (result.message && result.message.includes('successfully')) {
+        if (result.message?.includes('success')) {
             showAlert('Venue deleted successfully!', 'success');
             await loadVenues();
         } else {
@@ -117,18 +73,14 @@ function toggleVenueForm() {
     const form = document.getElementById('venueFormContainer');
     const addButton = document.querySelector('button[onclick="toggleVenueForm()"]');
     const listContainer = document.getElementById('venues-list');
+    const isHidden = form.style.display === 'none';
     
-    if (form.style.display === 'none') {
-        listContainer.style.display = 'none';
-        form.style.display = 'block';
-        addButton.style.display = 'none';
-        form.scrollIntoView({ behavior: 'smooth' });
-    } else {
-        form.style.display = 'none';
-        addButton.style.display = 'block';
-        listContainer.style.display = 'block';
-        loadVenues(); 
-    }
+    listContainer.style.display = isHidden ? 'none' : 'block';
+    form.style.display = isHidden ? 'block' : 'none';
+    addButton.style.display = isHidden ? 'none' : 'block';
+    
+    if (isHidden) form.scrollIntoView({ behavior: 'smooth' });
+    else loadVenues();
 }
 
 async function handleVenueFormSubmit(e) {
@@ -136,7 +88,6 @@ async function handleVenueFormSubmit(e) {
     e.stopPropagation();
     
     const form = e.target;
-    const formData = new FormData(form);
     const submitButton = form.querySelector('button[type="submit"]');
     const originalText = submitButton.innerHTML;
     
@@ -144,17 +95,14 @@ async function handleVenueFormSubmit(e) {
     submitButton.innerHTML = '<span class="spinner"></span>Submitting...';
     
     try {
-        const data = {};
-        formData.forEach((value, key) => {
-            data[key] = value || null;
-        });
-        
+        const data = Object.fromEntries(new FormData(form).entries());
+        Object.keys(data).forEach(k => data[k] = data[k] || null);
         const result = await apiCall('venues.php', 'POST', data);
         
-        if (result.message && result.message.includes('successfully')) {
+        if (result.message?.includes('success')) {
             showAlert('Venue added successfully!', 'success');
             form.reset();
-            toggleVenueForm(); 
+            toggleVenueForm();
         } else {
             showAlert(result.message || 'Operation failed', 'error');
         }
@@ -167,13 +115,11 @@ async function handleVenueFormSubmit(e) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('Venues Management Initialized');
     
     const venueForm = document.getElementById('venueForm');
-    if (venueForm) {
-        venueForm.addEventListener('submit', handleVenueFormSubmit);
-    }
+    if (venueForm) venueForm.addEventListener('submit', handleVenueFormSubmit);
     
     try {
         await loadVenues();
