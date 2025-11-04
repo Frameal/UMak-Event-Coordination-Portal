@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venues - UMak ECP</title>
+    <link rel="stylesheet" href="admin_dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="umak-logo">
+                <div class="umak-branding">
+                    <h1>ECP</h1>
+                    <p>University of Makati – Event Coordination Portal</p>
+                    <div style="margin-top: 15px; font-size: 0.9rem; color: #1e3a5f; font-weight: 500;">
+                        Streamlining event planning and participation across the University of Makati
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-tabs">
+            <a href="admin_dashboard.html" class="nav-tab">Dashboard</a>
+            <a href="admin_students.html" class="nav-tab">Students</a>
+            <a href="admin_events.html" class="nav-tab">Events</a>
+            <a href="admin_venues.html" class="nav-tab active">Venues</a>
+            <a href="admin_registrations.html" class="nav-tab">Registrations</a>
+        </div>
+        
+        <!-- Venues Content -->
+        <div class="tab-content active">
+            <h2>Venue Management</h2>
+            
+            <div id="venues-list">
+                <h3>Venues List</h3>
+                <div class="list-container">
+                    <p>Click "Connect to Database" to load venues from MySQL</p>
+                    <button onclick="loadVenues()" class="btn">Connect to Database</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button onclick="toggleVenueForm()" class="btn btn-primary">➕ Add New Venue</button>
+            </div>
+
+            <div id="venueFormContainer" style="display: none; margin-top: 20px;">
+                <div class="form-section">
+                    <h3>Add New Venue</h3>
+                    <form id="venueForm">
+                        <div class="form-group">
+                            <label>Venue Name:</label>
+                            <input type="text" name="venue_name" required placeholder="UPAT">
+                        </div>
+                        <div class="form-group">
+                            <label>Capacity:</label>
+                            <input type="number" name="capacity" required min="1" placeholder="1000">
+                        </div>
+                        <div class="form-group">
+                            <label>Location:</label>
+                            <input type="text" name="location" placeholder="Upper Campus">
+                        </div>
+                        <div class="form-group">
+                            <label>Facilities:</label>
+                            <textarea name="facilities" rows="3" placeholder="Audio system, Projector, Stage"></textarea>
+                        </div>
+                        <div style="text-align: left;">
+                            <button type="submit" class="btn">Add Venue</button>
+                            <button type="button" class="btn btn-danger" onclick="toggleVenueForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script src="admin_venues.js"></script>
+</body>
+
+</html>

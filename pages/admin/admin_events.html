@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - UMak ECP</title>
+    <link rel="stylesheet" href="admin_dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="umak-logo">
+                <div class="umak-branding">
+                    <h1>ECP</h1>
+                    <p>University of Makati – Event Coordination Portal</p>
+                    <div style="margin-top: 15px; font-size: 0.9rem; color: #1e3a5f; font-weight: 500;">
+                        Streamlining event planning and participation across the University of Makati
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-tabs">
+            <a href="admin_dashboard.html" class="nav-tab">Dashboard</a>
+            <a href="admin_students.html" class="nav-tab">Students</a>
+            <a href="admin_events.html" class="nav-tab active">Events</a>
+            <a href="admin_venues.html" class="nav-tab">Venues</a>
+            <a href="admin_registrations.html" class="nav-tab">Registrations</a>
+        </div>
+        
+        <!-- Events Content -->
+        <div class="tab-content active">
+            <h2>Event Management</h2>
+            
+            <div id="events-list">
+                <h3>Events List</h3>
+                <div class="list-container">
+                    <p>Click "Connect to Database" to load events from MySQL</p>
+                    <button onclick="loadEvents()" class="btn">Connect to Database</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button onclick="toggleEventForm()" class="btn btn-primary">➕ Add New Event</button>
+            </div>
+
+            <div id="eventFormContainer" style="display: none; margin-top: 20px;">
+                <div class="form-section">
+                    <h3>Create New Event</h3>
+                    <form id="eventForm">
+                        <div class="form-group">
+                            <label>Event Name:</label>
+                            <input type="text" name="event_name" required placeholder="Web Development Workshop">
+                        </div>
+                        <div class="form-group">
+                            <label>Description:</label>
+                            <textarea name="description" rows="3" placeholder="Event description..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Event Date:</label>
+                            <input type="date" name="event_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Start Time:</label>
+                            <input type="time" name="start_time" required>
+                        </div>
+                        <div class="form-group">
+                            <label>End Time:</label>
+                            <input type="time" name="end_time" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Venue:</label>
+                            <select name="venue_id" required id="venue-select">
+                                <option value="">Select Venue</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Attendees Capacity:</label>
+                            <input type="number" name="attendees_capacity" required min="1" placeholder="100">
+                        </div>
+                        <div style="text-align: left;">
+                            <button type="submit" class="btn">Create Event</button>
+                            <button type="button" class="btn btn-danger" onclick="toggleEventForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script src="admin_events.js"></script>
+</body>
+</html>

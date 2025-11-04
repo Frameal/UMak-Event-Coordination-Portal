@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrations - UMak ECP</title>
+    <link rel="stylesheet" href="admin_dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="umak-logo">
+                <div class="umak-branding">
+                    <h1>ECP</h1>
+                    <p>University of Makati – Event Coordination Portal</p>
+                    <div style="margin-top: 15px; font-size: 0.9rem; color: #1e3a5f; font-weight: 500;">
+                        Streamlining event planning and participation across the University of Makati
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-tabs">
+            <a href="admin_dashboard.html" class="nav-tab">Dashboard</a>
+            <a href="admin_students.html" class="nav-tab">Students</a>
+            <a href="admin_events.html" class="nav-tab">Events</a>
+            <a href="admin_venues.html" class="nav-tab">Venues</a>
+            <a href="admin_registrations.html" class="nav-tab active">Registrations</a>
+        </div>
+        
+        <!-- Registrations Content -->
+        <div class="tab-content active">
+            <h2>Event Registration</h2>
+            
+            <div id="registrations-list">
+                <h3>Registrations List</h3>
+                <div class="list-container">
+                    <p>Click "Connect to Database" to load registrations from MySQL</p>
+                    <button onclick="loadRegistrations()" class="btn">Connect to Database</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button onclick="toggleRegistrationForm()" class="btn btn-primary">➕ Add New Registration</button>
+            </div>
+
+            <div id="registrationFormContainer" style="display: none; margin-top: 20px;">
+                <div class="form-section">
+                    <h3>Register Student for Event</h3>
+                    <form id="registrationForm">
+                        <div class="form-group">
+                            <label>Student:</label>
+                            <select name="student_id" required id="student-select">
+                                <option value="">Select Student</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Event:</label>
+                            <select name="event_id" required id="event-select">
+                                <option value="">Select Event</option>
+                            </select>
+                        </div>
+                        <div style="text-align: left;">
+                            <button type="submit" class="btn">Register Student</button>
+                            <button type="button" class="btn btn-danger" onclick="toggleRegistrationForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script src="admin_registrations.js"></script>
+</body>
+</html>
