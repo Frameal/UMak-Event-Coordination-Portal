@@ -13,218 +13,95 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 require_once __DIR__ . '/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
+$db = (new Database())->getConnection();
 
 if ($db === null) {
     http_response_code(500);
-    echo json_encode([
-        "success" => false,
-        "message" => "Database connection failed. Please check your database configuration."
-    ]);
+    echo json_encode(["success" => false, "message" => "Database connection failed. Please check your database configuration."]);
     exit();
 }
 
-$method = $_SERVER['REQUEST_METHOD'];
-
-try {
-    switch($method) {
-        case 'GET':
-            handleGet($db);
-            break;
-            
-        case 'POST':
-            handlePost($db);
-            break;
-            
-        case 'PUT':
-            handlePut($db);
-            break;
-            
-        case 'DELETE':
-            handleDelete($db);
-            break;
-            
-        default:
-            http_response_code(405);
-            echo json_encode([
-                "success" => false,
-                "message" => "Method not allowed"
-            ]);
-            break;
-    }
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode([
-        "success" => false,
-        "message" => "Server error: " . $e->getMessage()
-    ]);
+function sendResponse($code, $success, $message, $data = null) {
+    http_response_code($code);
+    $response = ["success" => $success, "message" => $message];
+    if ($data) $response = array_merge($response, $data);
+    echo json_encode($response);
 }
 
 function handleGet($db) {
+    $query = isset($_GET['id']) ? 
+        "SELECT * FROM students WHERE student_id = ? LIMIT 1" : 
+        "SELECT * FROM students ORDER BY lastname, firstname";
+    
+    $stmt = $db->prepare($query);
+    $stmt->execute(isset($_GET['id']) ? [$_GET['id']] : []);
+    
     if (isset($_GET['id'])) {
-        $query = "SELECT * FROM students WHERE student_id = ? LIMIT 1";
-        $stmt = $db->prepare($query);
-        $stmt->execute([$_GET['id']]);
         $student = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($student) {
-            echo json_encode([
-                "success" => true,
-                "data" => $student
-            ]);
-        } else {
-            http_response_code(404);
-            echo json_encode([
-                "success" => false,
-                "message" => "Student not found"
-            ]);
-        }
+        echo $student ? json_encode(["success" => true, "data" => $student]) : 
+            (http_response_code(404) || json_encode(["success" => false, "message" => "Student not found"]));
     } else {
-        $query = "SELECT * FROM students ORDER BY lastname, firstname";
-        $stmt = $db->prepare($query);
-        $stmt->execute();
-        $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        echo json_encode($students);
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 }
 
 function handlePost($db) {
-    $input = file_get_contents("php://input");
-    $data = json_decode($input, true);
+    $data = json_decode(file_get_contents("php://input"), true);
     
     if (json_last_error() !== JSON_ERROR_NONE) {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false,
-            "message" => "Invalid JSON: " . json_last_error_msg()
-        ]);
-        return;
+        return sendResponse(400, false, "Invalid JSON: " . json_last_error_msg());
     }
     
     $required = ['student_number', 'lastname', 'firstname', 'email', 'gender'];
-    $missing = [];
-    
-    foreach ($required as $field) {
-        if (empty($data[$field])) {
-            $missing[] = $field;
-        }
-    }
+    $missing = array_filter($required, fn($f) => empty($data[$f]));
     
     if (!empty($missing)) {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false,
-            "message" => "Missing required fields: " . implode(', ', $missing)
-        ]);
-        return;
+        return sendResponse(400, false, "Missing required fields: " . implode(', ', $missing));
     }
     
     if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false,
-            "message" => "Invalid email format"
-        ]);
-        return;
+        return sendResponse(400, false, "Invalid email format");
     }
     
     if (strlen($data['student_number']) !== 9) {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false,
-            "message" => "Student number must be exactly 9 characters"
-        ]);
-        return;
+        return sendResponse(400, false, "Student number must be exactly 9 characters");
     }
     
-    $checkQuery = "SELECT student_id FROM students WHERE student_number = ?";
-    $checkStmt = $db->prepare($checkQuery);
-    $checkStmt->execute([$data['student_number']]);
-    
-    if ($checkStmt->fetch()) {
-        http_response_code(409);
-        echo json_encode([
-            "success" => false,
-            "message" => "Student number already exists"
-        ]);
-        return;
+    foreach (['student_number', 'email'] as $field) {
+        $stmt = $db->prepare("SELECT student_id FROM students WHERE $field = ?");
+        $stmt->execute([$data[$field]]);
+        if ($stmt->fetch()) {
+            return sendResponse(409, false, ucfirst(str_replace('_', ' ', $field)) . " already exists");
+        }
     }
     
-    $checkQuery = "SELECT student_id FROM students WHERE email = ?";
-    $checkStmt = $db->prepare($checkQuery);
-    $checkStmt->execute([$data['email']]);
-    
-    if ($checkStmt->fetch()) {
-        http_response_code(409);
-        echo json_encode([
-            "success" => false,
-            "message" => "Email already exists"
-        ]);
-        return;
-    }
-    
-    $defaultPassword = password_hash('umak123', PASSWORD_BCRYPT);
-    
-    $query = "INSERT INTO students 
-              (student_number, lastname, firstname, middlename, password, email, 
-               gender, year_level, course, contact_number) 
+    $query = "INSERT INTO students (student_number, lastname, firstname, middlename, password, email, gender, year_level, course, contact_number) 
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     $stmt = $db->prepare($query);
-    
     $result = $stmt->execute([
-        $data['student_number'],
-        $data['lastname'],
-        $data['firstname'],
-        $data['middlename'] ?? null,
-        $defaultPassword,
-        $data['email'],
-        $data['gender'],
-        $data['year_level'] ?? null,
-        $data['course'] ?? null,
-        $data['contact_number'] ?? null
+        $data['student_number'], $data['lastname'], $data['firstname'], 
+        $data['middlename'] ?? null, password_hash('umak123', PASSWORD_BCRYPT), 
+        $data['email'], $data['gender'], $data['year_level'] ?? null, 
+        $data['course'] ?? null, $data['contact_number'] ?? null
     ]);
     
-    if ($result) {
-        http_response_code(201);
-        echo json_encode([
-            "success" => true,
-            "message" => "Student created successfully",
-            "id" => $db->lastInsertId(),
-            "student_number" => $data['student_number']
-        ]);
-    } else {
-        http_response_code(500);
-        $error = $stmt->errorInfo();
-        echo json_encode([
-            "success" => false,
-            "message" => "Failed to create student: " . $error[2]
-        ]);
-    }
+    $result ? sendResponse(201, true, "Student created successfully", 
+        ["id" => $db->lastInsertId(), "student_number" => $data['student_number']]) :
+        sendResponse(500, false, "Failed to create student: " . $stmt->errorInfo()[2]);
 }
 
 function handlePut($db) {
-    $input = file_get_contents("php://input");
-    $data = json_decode($input, true);
+    $data = json_decode(file_get_contents("php://input"), true);
     
     if (!isset($data['student_id'])) {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false,
-            "message" => "Student ID is required"
-        ]);
-        return;
+        return sendResponse(400, false, "Student ID is required");
     }
     
-    $fields = [];
-    $values = [];
+    $allowed = ['lastname', 'firstname', 'middlename', 'email', 'gender', 'year_level', 'course', 'contact_number'];
+    $fields = $values = [];
     
-    $allowedFields = ['lastname', 'firstname', 'middlename', 'email', 'gender', 
-                      'year_level', 'course', 'contact_number'];
-    
-    foreach ($allowedFields as $field) {
+    foreach ($allowed as $field) {
         if (isset($data[$field])) {
             $fields[] = "$field = ?";
             $values[] = $data[$field];
@@ -232,70 +109,39 @@ function handlePut($db) {
     }
     
     if (empty($fields)) {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false,
-            "message" => "No fields to update"
-        ]);
-        return;
+        return sendResponse(400, false, "No fields to update");
     }
     
     $values[] = $data['student_id'];
+    $stmt = $db->prepare("UPDATE students SET " . implode(', ', $fields) . " WHERE student_id = ?");
     
-    $query = "UPDATE students SET " . implode(', ', $fields) . " WHERE student_id = ?";
-    $stmt = $db->prepare($query);
-    
-    if ($stmt->execute($values)) {
-        echo json_encode([
-            "success" => true,
-            "message" => "Student updated successfully"
-        ]);
-    } else {
-        http_response_code(500);
-        echo json_encode([
-            "success" => false,
-            "message" => "Failed to update student"
-        ]);
-    }
+    $stmt->execute($values) ? sendResponse(200, true, "Student updated successfully") :
+        sendResponse(500, false, "Failed to update student");
 }
 
 function handleDelete($db) {
     if (!isset($_GET['id'])) {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false,
-            "message" => "Student ID is required"
-        ]);
-        return;
+        return sendResponse(400, false, "Student ID is required");
     }
     
-    $checkQuery = "SELECT student_id FROM students WHERE student_id = ?";
-    $checkStmt = $db->prepare($checkQuery);
-    $checkStmt->execute([$_GET['id']]);
+    $stmt = $db->prepare("SELECT student_id FROM students WHERE student_id = ?");
+    $stmt->execute([$_GET['id']]);
     
-    if (!$checkStmt->fetch()) {
-        http_response_code(404);
-        echo json_encode([
-            "success" => false,
-            "message" => "Student not found"
-        ]);
-        return;
+    if (!$stmt->fetch()) {
+        return sendResponse(404, false, "Student not found");
     }
     
-    $query = "DELETE FROM students WHERE student_id = ?";
-    $stmt = $db->prepare($query);
-    
-    if ($stmt->execute([$_GET['id']])) {
-        echo json_encode([
-            "success" => true,
-            "message" => "Student deleted successfully"
-        ]);
-    } else {
-        http_response_code(500);
-        echo json_encode([
-            "success" => false,
-            "message" => "Failed to delete student"
-        ]);
-    }
+    $stmt = $db->prepare("DELETE FROM students WHERE student_id = ?");
+    $stmt->execute([$_GET['id']]) ? sendResponse(200, true, "Student deleted successfully") :
+        sendResponse(500, false, "Failed to delete student");
+}
+
+try {
+    $handlers = ['GET' => 'handleGet', 'POST' => 'handlePost', 'PUT' => 'handlePut', 'DELETE' => 'handleDelete'];
+    isset($handlers[$_SERVER['REQUEST_METHOD']]) ? 
+        $handlers[$_SERVER['REQUEST_METHOD']]($db) : 
+        sendResponse(405, false, "Method not allowed");
+} catch (Exception $e) {
+    sendResponse(500, false, "Server error: " . $e->getMessage());
 }
 ?>
