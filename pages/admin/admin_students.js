@@ -31,7 +31,7 @@ async function loadStudents() {
     container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Loading students...</p>';
     
     try {
-        const students = await apiCall('students.php');
+        const students = await apiCall('admin-students.php');
         container.innerHTML = !students?.length ? 
             '<p style="text-align: center; padding: 20px;">No students found. Add your first student!</p>' : 
             renderStudentsTable(students);
@@ -59,7 +59,7 @@ function renderStudentsTable(students) {
 async function deleteStudent(id) {
     if (!confirm('Delete this student from the database?')) return;
     try {
-        const result = await apiCall(`students.php?id=${id}`, 'DELETE');
+        const result = await apiCall(`admin-students.php?id=${id}`, 'DELETE');
         if (result.message?.includes('success')) {
             showAlert('Student deleted successfully!', 'success');
             await loadStudents();
@@ -130,7 +130,7 @@ async function handleStudentFormSubmit(e) {
     try {
         const data = Object.fromEntries(new FormData(form).entries());
         Object.keys(data).forEach(k => data[k] = data[k] || null);
-        const result = await apiCall('students.php', 'POST', data);
+        const result = await apiCall('admin-students.php', 'POST', data);
         
         if (result.message?.includes('success')) {
             showAlert('Student added successfully!', 'success');

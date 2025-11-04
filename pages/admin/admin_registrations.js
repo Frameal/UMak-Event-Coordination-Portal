@@ -31,7 +31,7 @@ async function loadRegistrations() {
     container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Loading registrations...</p>';
     
     try {
-        const registrations = await apiCall('registrations.php');
+        const registrations = await apiCall('admin-registrations.php');
         container.innerHTML = !registrations?.length ? 
             '<p style="text-align: center; padding: 20px;">No registrations found. Register students for events!</p>' : 
             renderRegistrationsTable(registrations);
@@ -59,7 +59,7 @@ async function loadStudentsDropdown() {
     const select = document.getElementById('student-select');
     if (!select) return;
     try {
-        const students = await apiCall('students.php');
+        const students = await apiCall('admin-students.php');
         select.innerHTML = '<option value="">Select Student</option>' + 
             students.map(s => `<option value="${s.student_id}">${s.lastname}, ${s.firstname} (${s.student_number})</option>`).join('');
     } catch (error) {
@@ -71,7 +71,7 @@ async function loadEventsDropdown() {
     const select = document.getElementById('event-select');
     if (!select) return;
     try {
-        const events = await apiCall('events.php');
+        const events = await apiCall('admin-events.php');
         const upcoming = events.filter(e => new Date(e.event_date) >= new Date().setHours(0,0,0,0));
         select.innerHTML = '<option value="">Select Event</option>' + 
             upcoming.map(e => `<option value="${e.event_id}">${e.event_name} (${formatDate(e.event_date)})</option>`).join('');
@@ -83,7 +83,7 @@ async function loadEventsDropdown() {
 async function deleteRegistration(id) {
     if (!confirm('Cancel this registration?')) return;
     try {
-        const result = await apiCall(`registrations.php?id=${id}`, 'DELETE');
+        const result = await apiCall(`admin-registrations.php?id=${id}`, 'DELETE');
         if (result.message?.includes('success')) {
             showAlert('Registration cancelled successfully!', 'success');
             await loadRegistrations();
@@ -131,7 +131,7 @@ async function handleRegistrationFormSubmit(e) {
     try {
         const data = Object.fromEntries(new FormData(form).entries());
         Object.keys(data).forEach(k => data[k] = data[k] || null);
-        const result = await apiCall('registrations.php', 'POST', data);
+        const result = await apiCall('admin-registrations.php', 'POST', data);
         
         if (result.message?.includes('success')) {
             showAlert('Student registered successfully!', 'success');

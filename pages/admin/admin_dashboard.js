@@ -33,7 +33,7 @@ function showAlert(message, type) {
 
 async function testConnection() {
     try {
-        const result = await apiCall('dashboard.php');
+        const result = await apiCall('admin-dashboard.php');
         if (result) {
             showAlert('Successfully connected to MySQL!', 'success');
             await loadDashboard();
@@ -47,7 +47,7 @@ async function testConnection() {
 
 async function loadDashboard() {
     try {
-        const stats = await apiCall('dashboard.php');
+        const stats = await apiCall('admin-dashboard.php');
         ['students', 'events', 'venues', 'registrations'].forEach(key => {
             const el = document.getElementById(`total-${key}`);
             if (el) el.textContent = stats[`total_${key}`] || '0';
@@ -58,22 +58,22 @@ async function loadDashboard() {
 }
 
 async function loadStudents() {
-    return loadData('students-list', 'students.php', renderStudentsTable, 
+    return loadData('students-list', 'admin-students.php', renderStudentsTable, 
         'No students found. Add your first student!', loadStudents, loadStudentsDropdown);
 }
 
 async function loadEvents() {
-    return loadData('events-list', 'events.php', renderEventsTable, 
+    return loadData('events-list', 'admin-events.php', renderEventsTable, 
         'No events found. Create your first event!', loadEvents, loadVenuesDropdown, loadEventsDropdown);
 }
 
 async function loadVenues() {
-    return loadData('venues-list', 'venues.php', renderVenuesTable, 
+    return loadData('venues-list', 'admin-venues.php', renderVenuesTable, 
         'No venues found. Add your first venue!', loadVenues, loadVenuesDropdown);
 }
 
 async function loadRegistrations() {
-    return loadData('registrations-list', 'registrations.php', renderRegistrationsTable, 
+    return loadData('registrations-list', 'admin-registrations.php', renderRegistrationsTable, 
         'No registrations found. Register students for events!', loadRegistrations);
 }
 
@@ -95,12 +95,12 @@ async function loadData(containerId, endpoint, renderFunc, emptyMsg, reloadFunc,
 }
 
 async function loadVenuesDropdown() {
-    return loadDropdown('venue-select', 'venues.php', 
+    return loadDropdown('venue-select', 'admin-venues.php', 
         v => `<option value="${v.venue_id}">${v.venue_name} (Cap: ${v.capacity})</option>`);
 }
 
 async function loadStudentsDropdown() {
-    return loadDropdown('student-select', 'students.php', 
+    return loadDropdown('student-select', 'admin-students.php', 
         s => `<option value="${s.student_id}">${s.lastname}, ${s.firstname} (${s.student_number})</option>`);
 }
 
@@ -108,7 +108,7 @@ async function loadEventsDropdown() {
     const select = document.getElementById('event-select');
     if (!select) return;
     try {
-        const events = await apiCall('events.php');
+        const events = await apiCall('admin-events.php');
         const upcoming = events.filter(e => new Date(e.event_date) >= new Date().setHours(0,0,0,0));
         select.innerHTML = '<option value="">Select Event</option>' + upcoming.map(e => 
             `<option value="${e.event_id}">${e.event_name} (${formatDate(e.event_date)})</option>`).join('');
@@ -220,10 +220,10 @@ async function handleFormSubmit(formId, endpoint, successMessage, reloadFunction
 
 async function deleteItem(type, id) {
     const config = {
-        student: { endpoint: 'students.php', message: 'Student', reload: [loadStudents, loadDashboard] },
-        event: { endpoint: 'events.php', message: 'Event', reload: [loadEvents, loadDashboard] },
-        venue: { endpoint: 'venues.php', message: 'Venue', reload: [loadVenues, loadDashboard] },
-        registration: { endpoint: 'registrations.php', message: 'Registration', reload: [loadRegistrations, loadDashboard], action: 'Cancel' }
+        student: { endpoint: 'admin-students.php', message: 'Student', reload: [loadStudents, loadDashboard] },
+        event: { endpoint: 'admin-events.php', message: 'Event', reload: [loadEvents, loadDashboard] },
+        venue: { endpoint: 'admin-venues.php', message: 'Venue', reload: [loadVenues, loadDashboard] },
+        registration: { endpoint: 'admin-registrations.php', message: 'Registration', reload: [loadRegistrations, loadDashboard], action: 'Cancel' }
     }[type];
     
     if (!confirm(`${config.action || 'Delete'} this ${config.message.toLowerCase()} ${config.action ? '' : 'from the database'}?`)) return;

@@ -31,7 +31,7 @@ async function loadVenues() {
     container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Loading venues...</p>';
     
     try {
-        const venues = await apiCall('venues.php');
+        const venues = await apiCall('admin-venues.php');
         container.innerHTML = !venues?.length ? 
             '<p style="text-align: center; padding: 20px;">No venues found. Add your first venue!</p>' : 
             renderVenuesTable(venues);
@@ -57,7 +57,7 @@ function renderVenuesTable(venues) {
 async function deleteVenue(id) {
     if (!confirm('Delete this venue from the database?')) return;
     try {
-        const result = await apiCall(`venues.php?id=${id}`, 'DELETE');
+        const result = await apiCall(`admin-venues.php?id=${id}`, 'DELETE');
         if (result.message?.includes('success')) {
             showAlert('Venue deleted successfully!', 'success');
             await loadVenues();
@@ -97,7 +97,7 @@ async function handleVenueFormSubmit(e) {
     try {
         const data = Object.fromEntries(new FormData(form).entries());
         Object.keys(data).forEach(k => data[k] = data[k] || null);
-        const result = await apiCall('venues.php', 'POST', data);
+        const result = await apiCall('admin-venues.php', 'POST', data);
         
         if (result.message?.includes('success')) {
             showAlert('Venue added successfully!', 'success');

@@ -31,7 +31,7 @@ async function loadEvents() {
     container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Loading events...</p>';
     
     try {
-        const events = await apiCall('events.php');
+        const events = await apiCall('admin-events.php');
         if (!events?.length) {
             container.innerHTML = '<p style="text-align: center; padding: 20px;">No events found. Create your first event!</p>';
             return;
@@ -63,7 +63,7 @@ async function loadVenuesDropdown() {
     const select = document.getElementById('venue-select');
     if (!select) return;
     try {
-        const venues = await apiCall('venues.php');
+        const venues = await apiCall('admin-venues.php');
         select.innerHTML = '<option value="">Select Venue</option>' + 
             venues.map(v => `<option value="${v.venue_id}">${v.venue_name} (Cap: ${v.capacity})</option>`).join('');
     } catch (error) {
@@ -74,7 +74,7 @@ async function loadVenuesDropdown() {
 async function deleteEvent(id) {
     if (!confirm('Delete this event from the database?')) return;
     try {
-        const result = await apiCall(`events.php?id=${id}`, 'DELETE');
+        const result = await apiCall(`admin-events.php?id=${id}`, 'DELETE');
         if (result.message?.includes('success')) {
             showAlert('Event deleted successfully!', 'success');
             await loadEvents();
@@ -108,7 +108,7 @@ async function handleEventFormSubmit(e) {
         Object.keys(data).forEach(k => data[k] = data[k] || null);
         data.status = 'Published';
         
-        const result = await apiCall('events.php', 'POST', data);
+        const result = await apiCall('admin-events.php', 'POST', data);
         if (result.message?.includes('success')) {
             showAlert('Event created successfully!', 'success');
             form.reset();
