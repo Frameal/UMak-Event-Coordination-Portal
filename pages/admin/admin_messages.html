@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Messages</title>
+  <style>
+    /* ... (Same as your provided CSS) ... */
+    /* Add any missing styles for consistency */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic', sans-serif; }
+    body { background-color: #f4f5f7; min-height: 100vh; display: flex; flex-direction: column; }
+    nav { background-color: #022d6d; display: flex; align-items: center; justify-content: space-between; padding: 10px 40px; position: sticky; top: 0; z-index: 1000; }
+    .navbar-left { display: flex; align-items: center; gap: 15px; color: white; font-size: 16px; font-weight: normal; }
+    .navbar-left img { height: 40px; }
+    .navbar-links { list-style: none; display: flex; gap: 25px; align-items: center; }
+    .navbar-links li a { text-decoration: none; color: white; padding: 10px 20px; border-radius: 3px; transition: 0.3s; }
+    .navbar-links li a:hover, .navbar-links li a.active-link { background-color: #f36b00; color: white; }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .nav-right .account-link { color: #ccc; font-size: 12px; text-decoration: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; transition: 0.3s; }
+    .nav-right .account-link:hover { color: white; border-color: white; }
+    .logout-btn { background-color: #f30000; color: white; border: none; border-radius: 4px; padding: 10px 25px; cursor: pointer; transition: 0.3s; }
+    .nav-badge { width: 10px; height: 10px; background-color: #dc3545; border-radius: 50%; position: absolute; top: 5px; right: 10px; border: 2px solid white; display: none; }
+    .main-container { display: flex; flex: 1; height: calc(100vh - 60px); margin-top: 60px; /* fix overlap */ }
+    .chat-sidebar { width: 300px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+    .chat-header { padding: 20px; border-bottom: 1px solid #eee; font-weight: bold; color: #022d6d; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
+    .new-msg-btn { background: none; border: none; color: #f36b00; font-size: 24px; cursor: pointer; font-weight: bold; }
+    .contact-list { overflow-y: auto; flex: 1; }
+    .contact-item { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+    .contact-item:hover { background-color: #f9f9f9; }
+    .contact-item.active { background-color: #e3f2fd; border-left: 4px solid #022d6d; }
+    .contact-info { display: flex; flex-direction: column; }
+    .contact-name { font-weight: bold; color: #333; font-size: 14px; }
+    .contact-role { font-size: 12px; color: #888; text-transform: uppercase; }
+    .unread-badge { background-color: #dc3545; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; display: none; }
+    .chat-area { flex: 1; display: flex; flex-direction: column; background: #f0f2f5; }
+    .message-header { padding: 10px 30px; background: white; border-bottom: 1px solid #ddd; height: 70px; display: flex; justify-content: space-between; align-items: center; }
+    .header-info h3 { font-size: 18px; color: #022d6d; margin-bottom: 2px; }
+    .header-subject { font-size: 14px; color: #555; }
+    .btn-delete { color: #dc3545; background: none; border: none; cursor: pointer; font-size: 14px; }
+    .messages-box { flex: 1; padding: 20px 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .message-bubble { max-width: 70%; padding: 12px 18px; border-radius: 15px; font-size: 14px; line-height: 1.5; position: relative; word-wrap: break-word; }
+    .msg-sent { align-self: flex-end; background-color: #022d6d; color: white; border-bottom-right-radius: 2px; }
+    .msg-received { align-self: flex-start; background-color: white; color: #333; border-bottom-left-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .msg-subject-tag { font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px; opacity: 0.8; text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 2px; }
+    .msg-attachment { margin-top: 8px; display: block; }
+    .attachment-img { max-width: 200px; max-height: 200px; border-radius: 8px; margin-bottom: 5px; cursor: pointer; border: 1px solid #ccc; object-fit: cover; display: block; background-color: #fff; }
+    .attachment-link { color: inherit; text-decoration: underline; font-size: 13px; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 4px; }
+    .input-area { padding: 20px 30px; background: white; border-top: 1px solid #ddd; display: flex; gap: 10px; align-items: center; }
+    .input-area input { flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
+    .btn-send { background: #f36b00; color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+    .file-label { cursor: pointer; font-size: 24px; color: #555; padding: 0 5px; }
+    .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; justify-content: center; align-items: center; cursor: zoom-out; }
+    .lightbox img { max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); cursor: default; object-fit: contain; }
+    .lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; font-weight: bold; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 25px; border-radius: 8px; width: 450px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: bold; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="navbar-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <span>University of Makati - ECP</span>
+    </div>
+
+    <ul class="navbar-links">
+      <li><a href="admin_dashboard.html">Dashboard</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_events.html">Events & Booking</a></li>
+      <li><a href="admin_venues.html">Venues</a></li>
+      <li><a href="admin_post_evaluations.html">Post-Evaluation</a></li>
+      <li><a href="#" class="active-link">Messages</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <a href="admin_account.html" class="account-link">⚙️ Settings</a>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="main-container">
+    <div class="chat-sidebar">
+        <div class="chat-header">
+            <span>Inbox</span>
+            <button class="new-msg-btn" onclick="showModal()">+</button>
+        </div>
+        <div class="contact-list" id="contactList">Loading...</div>
+    </div>
+
+    <div class="chat-area">
+        <div class="message-header" id="msgHeader">
+            <div class="header-info">
+                <h3 id="headerName">Select a conversation</h3>
+                <span class="header-subject" id="headerSubject"></span>
+            </div>
+            <button class="btn-delete" id="btnDelete" style="display:none" onclick="deleteConversation()">Delete Thread</button>
+        </div>
+        <div class="messages-box" id="messageBox"></div>
+        
+        <div class="input-area" id="inputArea" style="display:none;">
+            <label for="fileInput" class="file-label">📎</label>
+            <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect()">
+            <input type="text" id="msgInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="btn-send" onclick="sendMessage()">Send</button>
+        </div>
+        <div id="filePreview" style="padding: 0 30px; font-size: 12px; color: #022d6d; display:none;"></div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+      <span class="lightbox-close">&times;</span>
+      <img id="lightboxImg" src="" onclick="event.stopPropagation()">
+  </div>
+
+  <div class="modal" id="newMsgModal">
+    <div class="modal-content">
+        <h3 style="color:#022d6d; margin-bottom:20px;">New Message</h3>
+        <div class="form-group">
+            <label>Recipient Type:</label>
+            <select id="msgType" onchange="loadRecipients()">
+                <option value="">Select Type</option>
+                <option value="organization">Organization</option>
+                <option value="admin">Other Admin</option>
+                </select>
+        </div>
+        <div class="form-group">
+            <label>Recipient:</label>
+            <select id="msgRecipient"><option value="">Select Type First...</option></select>
+        </div>
+        <div class="form-group">
+            <label>Subject:</label>
+            <input type="text" id="msgSubject" placeholder="e.g., Event Concern">
+        </div>
+        <div class="form-group">
+            <label>Message:</label>
+            <textarea id="msgBody" rows="4"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button onclick="document.getElementById('newMsgModal').style.display='none'" style="background:#ccc; border:none; padding:8px 15px; border-radius:4px;">Cancel</button>
+            <button onclick="startChat()" style="background:#022d6d; color:white; border:none; padding:8px 15px; border-radius:4px;">Send</button>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '../../api';
+    const session = JSON.parse(localStorage.getItem('user_session'));
+    if (!session || session.user_type !== 'admin') window.location.href = '../login_signup.html';
+
+    let currentContact = null;
+
+    // Poll Updates (Badges & List)
+    async function pollUpdates() {
+        // 1. Unread Count
+        const resCount = await fetch(`${API_BASE}/messages.php?action=unread_count&user_id=${session.user_id}&user_type=admin`);
+        const dataCount = await resCount.json();
+        // Assuming you might add a badge to nav later (code not in HTML but good practice)
+        
+        // 2. Refresh List
+        if(!currentContact) loadContacts(); 
+    }
+
+    async function loadContacts() {
+        const res = await fetch(`${API_BASE}/messages.php?user_id=${session.user_id}&user_type=admin`);
+        const data = await res.json();
+        const list = document.getElementById('contactList');
+        const currentId = currentContact ? currentContact.contact_id : null;
+        list.innerHTML = '';
+
+        if(!data.contacts || data.contacts.length === 0) {
+            list.innerHTML = '<div style="padding:20px; text-align:center; color:#888">No messages.</div>';
+            return;
+        }
+
+        data.contacts.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'contact-item';
+            if(currentId == c.contact_id) div.classList.add('active');
+            
+            const badgeDisplay = c.unread_count > 0 ? 'inline-block' : 'none';
+
+            div.innerHTML = `
+                <div class="contact-info">
+                    <span class="contact-name">${c.name}</span>
+                    <span class="contact-role">${c.contact_type}</span>
+                </div>
+                <span class="unread-badge" style="display:${badgeDisplay}">${c.unread_count}</span>
+            `;
+            div.onclick = () => openChat(c, div);
+            list.appendChild(div);
+        });
+    }
+
+    async function openChat(contact, element) {
+        currentContact = contact;
+        document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        document.getElementById('headerName').innerText = contact.name;
+        document.getElementById('btnDelete').style.display = 'block';
+        document.getElementById('inputArea').style.display = 'flex';
+        
+        // Clear old input when switching chat
+        document.getElementById('msgInput').value = '';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('filePreview').style.display = 'none';
+
+        fetchMessages();
+    }
+
+    async function fetchMessages() {
+        if(!currentContact) return;
+        const res = await fetch(`${API_BASE}/messages.php?user_id=${session.user_id}&user_type=admin&contact_id=${currentContact.contact_id}&contact_type=${currentContact.contact_type}`);
+        const data = await res.json();
+        
+        const box = document.getElementById('messageBox');
+        box.innerHTML = '';
+        let lastSubject = '';
+
+        data.messages.forEach(msg => {
+            const isMe = msg.sender_type === 'admin' && msg.sender_id == session.user_id;
+            const div = document.createElement('div');
+            div.className = `message-bubble ${isMe ? 'msg-sent' : 'msg-received'}`;
+            
+            let subjectHtml = '';
+            if(msg.subject && msg.subject !== lastSubject) {
+                subjectHtml = `<span class="msg-subject-tag">${msg.subject}</span>`;
+                lastSubject = msg.subject;
+            }
+
+            // Attachment Handling
+            let attachHtml = '';
+            if(msg.attachment_path) {
+                const safePath = msg.attachment_path; 
+                if(msg.attachment_type && ['jpg','jpeg','png','gif'].includes(msg.attachment_type)) {
+                    attachHtml = `<div class="msg-attachment">
+                        <img src="${safePath}" class="attachment-img" onclick="openLightbox('${safePath}')" alt="Image">
+                    </div>`;
+                } else {
+                    attachHtml = `<div class="msg-attachment"><a href="${safePath}" target="_blank" class="attachment-link">📄 Download ${msg.attachment_name}</a></div>`;
+                }
+            }
+
+            div.innerHTML = `${subjectHtml}${msg.message_body}${attachHtml}`;
+            box.appendChild(div);
+        });
+        
+        document.getElementById('headerSubject').innerText = lastSubject ? `Subject: ${lastSubject}` : '';
+        box.scrollTop = box.scrollHeight;
+        
+        pollUpdates();
+    }
+
+    function handleFileSelect() {
+        const file = document.getElementById('fileInput').files[0];
+        const preview = document.getElementById('filePreview');
+        if(file) {
+            preview.innerText = `Selected: ${file.name}`;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // Lightbox
+    function openLightbox(src) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('msgInput');
+        const fileInput = document.getElementById('fileInput');
+        
+        if(!input.value.trim() && !fileInput.files[0]) return;
+
+        const formData = new FormData();
+        formData.append('sender_type', 'admin');
+        formData.append('sender_id', session.user_id);
+        formData.append('receiver_type', currentContact.contact_type);
+        formData.append('receiver_id', currentContact.contact_id);
+        formData.append('message_body', input.value);
+        
+        if(fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+
+        await fetch(`${API_BASE}/messages.php`, { method: 'POST', body: formData });
+
+        // Clear input after sending
+        input.value = '';
+        fileInput.value = '';
+        document.getElementById('filePreview').style.display = 'none';
+        fetchMessages();
+    }
+
+    async function deleteConversation() {
+        if(!confirm("Delete this conversation? It will be hidden from your view.")) return;
+        await fetch(`${API_BASE}/messages.php?user_id=${session.user_id}&user_type=admin&contact_id=${currentContact.contact_id}&contact_type=${currentContact.contact_type}`, { method: 'DELETE' });
+        location.reload();
+    }
+
+    // --- Modal Logic with DYNAMIC FETCHING ---
+    function showModal() {
+        document.getElementById('newMsgModal').style.display = 'flex';
+        // Clear modal inputs
+        document.getElementById('msgSubject').value = '';
+        document.getElementById('msgBody').value = '';
+        document.getElementById('msgType').value = '';
+        document.getElementById('msgRecipient').innerHTML = '<option value="">Select Type First</option>';
+    }
+
+    async function loadRecipients() {
+        const type = document.getElementById('msgType').value;
+        const sel = document.getElementById('msgRecipient');
+        sel.innerHTML = '<option>Loading...</option>';
+        
+        if (type) {
+            // Fetch recipients dynamically from the new API action
+            try {
+                const res = await fetch(`${API_BASE}/messages.php?action=get_recipients&type=${type}`);
+                const result = await res.json();
+                
+                sel.innerHTML = '';
+                if(result.success && result.data.length > 0) {
+                    result.data.forEach(item => {
+                        sel.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                    });
+                } else {
+                    sel.innerHTML = '<option value="">No recipients found</option>';
+                }
+            } catch(e) {
+                console.error(e);
+                sel.innerHTML = '<option value="">Error loading list</option>';
+            }
+        } else {
+            sel.innerHTML = '<option value="">Select Type First</option>';
+        }
+    }
+
+    async function startChat() {
+        const type = document.getElementById('msgType').value;
+        const recId = document.getElementById('msgRecipient').value;
+        const sub = document.getElementById('msgSubject').value;
+        const body = document.getElementById('msgBody').value;
+
+        if(!recId || !body) { alert("Fill required fields"); return; }
+
+        const formData = new FormData();
+        formData.append('sender_type', 'admin');
+        formData.append('sender_id', session.user_id);
+        formData.append('receiver_type', type);
+        formData.append('receiver_id', recId);
+        formData.append('subject', sub);
+        formData.append('message_body', body);
+        formData.append('category', 'General');
+
+        await fetch(`${API_BASE}/messages.php`, { method: 'POST', body: formData });
+        
+        document.getElementById('newMsgModal').style.display = 'none';
+        loadContacts(); // Refresh list
+    }
+
+    function logout() {
+        if(confirm("Logout?")) window.location.href = "../login_signup.html";
+    }
+
+    loadContacts();
+    setInterval(() => {
+        if(currentContact) fetchMessages();
+        pollUpdates();
+    }, 5000);
+  </script>
+</body>
+</html>

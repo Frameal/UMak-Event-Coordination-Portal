@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluation Reports - Admin</title>
+  <style>
+    /* CSS MATCHING ADMIN DASHBOARD */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic', sans-serif; }
+    body { background-color: #f4f5f7; min-height: 100vh; display: flex; flex-direction: column; }
+    
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 40px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+      font-size: 16px;
+      font-weight: normal;
+    }
+
+    .navbar-left img {
+      height: 40px;
+    }
+
+    .navbar-links {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+
+    .navbar-links li a {
+      text-decoration: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 3px;
+      transition: 0.3s;
+    }
+
+    .navbar-links li a:hover,
+    .navbar-links li a.active-link {
+      background-color: #f36b00;
+      color: white;
+    }
+
+    /* NAV RIGHT - Settings & Logout */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-right .account-link {
+      color: #ccc;
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      border-radius: 15px;
+      transition: 0.3s;
+    }
+
+    .nav-right .account-link:hover {
+      color: white;
+      border-color: white;
+    }
+    .logout-btn { background-color: #f30000; color: white; border: none; border-radius: 4px; padding: 10px 25px; cursor: pointer; }
+
+    main { flex: 1; padding: 40px 60px; display: flex; gap: 20px; }
+    
+    /* SIDEBAR LIST */
+    .sidebar-list { width: 30%; background: white; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 20px; height: 80vh; overflow-y: auto; }
+    .list-header { border-bottom: 2px solid #f36b00; padding-bottom: 10px; margin-bottom: 15px; color: #022d6d; font-weight: bold; font-size: 18px; }
+    .event-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; }
+    .event-item:hover { background: #f0f0f0; }
+    .event-item.active { border-left: 4px solid #f36b00; background: #fff5eb; }
+    
+    /* REPORT AREA */
+    .report-area { width: 70%; background: white; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 30px; display: none; }
+    .report-title { color: #022d6d; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+    
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: #f8f9fa; padding: 20px; text-align: center; border-radius: 6px; border: 1px solid #eee; }
+    .stat-val { font-size: 32px; font-weight: bold; color: #022d6d; }
+    .stat-label { font-size: 12px; color: #666; text-transform: uppercase; }
+    
+    .bar-container { margin-bottom: 15px; }
+    .bar-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; color: #333; }
+    .bar-bg { background: #eee; height: 20px; border-radius: 10px; overflow: hidden; }
+    .bar-fill { background: #022d6d; height: 100%; transition: width 0.5s ease; }
+    
+    .comment-box { background: #fafafa; padding: 15px; border-left: 4px solid #28a745; margin-bottom: 10px; border-radius: 4px; }
+    
+    footer { background-color: #242424; color: #f36b00; padding: 40px 20px; text-align: center; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+    <nav>
+        <div class="navbar-left">
+          <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+          <span>University of Makati - ECP</span>
+        </div>
+    
+        <ul class="navbar-links">
+          <li><a href="admin_dashboard.html" >Dashboard</a></li>
+          <li><a href="admin_students.html">Students</a></li>
+          <li><a href="admin_events.html">Events & Booking</a></li>
+          <li><a href="admin_venues.html">Venues</a></li>
+          <li><a href="#" class="active-link"">Post-Evaluation</a></li>
+          <li><a href="admin_messages.html">Messages</a></li>
+        </ul>
+    
+        <div class="nav-right">
+          <a href="admin_account.html" class="account-link">⚙️ Settings</a>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </nav>
+
+  <main>
+    <!-- Event Selection List -->
+    <div class="sidebar-list">
+        <div class="list-header">Select Completed Event</div>
+        <div id="eventListContainer">Loading events...</div>
+    </div>
+
+    <!-- Report View -->
+    <div class="report-area" id="reportView">
+        <h2 class="report-title" id="repTitle">Event Title</h2>
+        
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-val" id="valResponses">0</div>
+                <div class="stat-label">Total Responses</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="valAttended">0</div>
+                <div class="stat-label">Total Attendees</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="valRate">0%</div>
+                <div class="stat-label">Response Rate</div>
+            </div>
+        </div>
+
+        <h3 style="color:#f36b00; margin-bottom:15px;">Criteria Breakdown (Avg out of 5)</h3>
+        <div id="breakdownContainer"></div>
+
+        <h3 style="color:#f36b00; margin:30px 0 15px;">Student Comments</h3>
+        <div id="commentsContainer" style="height:300px; overflow-y:auto;"></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 University of Makati - Event Coordination Portal</p>
+  </footer>
+
+  <script>
+    const API_BASE = '../../api';
+
+    // Verify session before loading
+    const session = localStorage.getItem('user_session');
+    if (!session) {
+        window.location.href = '../login_signup.html';
+    }
+
+    async function loadEvents() {
+        try {
+            const res = await fetch(`${API_BASE}/admin_evaluations.php`);
+            const data = await res.json();
+            const container = document.getElementById('eventListContainer');
+            container.innerHTML = '';
+
+            if(data.events.length === 0) {
+                container.innerHTML = '<p style="padding:10px; color:#666;">No completed events found.</p>';
+                return;
+            }
+
+            data.events.forEach(ev => {
+                const div = document.createElement('div');
+                div.className = 'event-item';
+                div.innerHTML = `
+                    <div style="font-weight:bold; color:#022d6d;">${ev.event_name}</div>
+                    <div style="font-size:12px; color:#666;">${ev.event_date}</div>
+                    <div style="font-size:12px; color:${ev.total_evaluations > 0 ? 'green':'red'}; margin-top:5px;">
+                        ${ev.total_evaluations} Evaluations Submitted
+                    </div>
+                `;
+                div.onclick = () => loadReport(ev);
+                container.appendChild(div);
+            });
+        } catch(e) {
+            console.error(e);
+            document.getElementById('eventListContainer').innerHTML = '<p style="color:red">Connection Error</p>';
+        }
+    }
+
+    async function loadReport(event) {
+        document.getElementById('reportView').style.display = 'block';
+        document.getElementById('repTitle').innerText = event.event_name;
+        
+        document.getElementById('valResponses').innerText = event.total_evaluations;
+        document.getElementById('valAttended').innerText = event.total_attended;
+        const rate = event.total_attended > 0 ? (event.total_evaluations / event.total_attended * 100).toFixed(1) : 0;
+        document.getElementById('valRate').innerText = rate + '%';
+
+        // Fetch Breakdown
+        const res = await fetch(`${API_BASE}/admin_evaluations.php?event_id=${event.event_id}`);
+        const data = await res.json();
+        
+        const avg = data.averages;
+        const breakdown = document.getElementById('breakdownContainer');
+        breakdown.innerHTML = '';
+
+        const renderBar = (label, value) => {
+            const val = parseFloat(value || 0).toFixed(2);
+            const percent = (val / 5) * 100;
+            return `
+            <div class="bar-container">
+                <div class="bar-label"><span>${label}</span><strong>${val} / 5.00</strong></div>
+                <div class="bar-bg"><div class="bar-fill" style="width:${percent}%"></div></div>
+            </div>`;
+        };
+
+        if(avg) {
+            breakdown.innerHTML += renderBar('Objectives: Clarity', avg.avg_obj_clarity);
+            breakdown.innerHTML += renderBar('Objectives: Relevance', avg.avg_obj_relevance);
+            breakdown.innerHTML += renderBar('Conduct: Flow & Organization', avg.avg_cond_flow);
+            breakdown.innerHTML += renderBar('Speaker: Mastery of Topic', avg.avg_res_mastery);
+            breakdown.innerHTML += renderBar('Technical: Venue Suitability', avg.avg_tech_venue);
+        } else {
+            breakdown.innerHTML = '<p>No data available.</p>';
+        }
+
+        const comms = document.getElementById('commentsContainer');
+        comms.innerHTML = '';
+        if(data.comments.length > 0) {
+            data.comments.forEach(c => {
+                comms.innerHTML += `<div class="comment-box"><small>${c.submitted_at}</small><p>${c.comments}</p></div>`;
+            });
+        } else {
+            comms.innerHTML = '<p style="color:#666; font-style:italic;">No written comments submitted.</p>';
+        }
+    }
+
+    loadEvents();
+  </script>
+</body>
+</html>

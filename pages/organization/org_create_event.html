@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Event - UMak ECP</title>
+  <!-- FullCalendar CSS -->
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+  <style>
+    /* GLOBAL STYLES */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic', sans-serif; }
+    body { background-color: #f4f5f7; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* NAVBAR */
+    nav { background-color: #022d6d; display: flex; align-items: center; justify-content: space-between; padding: 10px 40px; position: sticky; top: 0; z-index: 1000; }
+    .nav-left { display: flex; align-items: center; gap: 15px; }
+    .nav-left img { height: 35px; }
+    .nav-title .main-title { color: white; font-size: 16px; font-weight: bold; display: block; }
+    .nav-title .org-name { color: #f36b00; font-size: 12px; }
+
+    /* SIDEBAR */
+    .sidebar { position: fixed; top: 60px; left: 0; width: 220px; background-color: white; bottom: 0; border-right: 1px solid #ddd; padding-top: 20px; display: flex; flex-direction: column; justify-content: space-between; z-index: 900; }
+    .sidebar a { display: block; padding: 12px 20px; color: #022d6d; text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+    .sidebar a:hover, .sidebar a.active { background-color: #022d6d; color: white; border-radius: 4px; margin: 0 10px; }
+
+    .logout-btn { background-color: #f30000; color: white; border: none; width: 80%; padding: 10px; margin: 20px auto; border-radius: 3px; cursor: pointer; font-size: 14px; }
+    .logout-btn:hover { background-color: #d00000; }
+
+    /* MAIN CONTENT */
+    .main-content { margin-left: 230px; margin-top: 80px; padding: 30px; flex: 1; overflow-y: auto; }
+
+    /* CALENDAR SECTION */
+    .calendar-wrapper { 
+        background: white; 
+        padding: 20px; 
+        border-radius: 8px; 
+        margin-bottom: 30px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        height: 75vh; 
+        min-height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+    #calendar { flex-grow: 1; }
+
+    /* FORM SECTION */
+    .form-container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 1000px; margin: 0 auto; }
+    .form-section { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+    .form-section h3 { color: #022d6d; margin-bottom: 20px; font-size: 18px; border-left: 4px solid #f36b00; padding-left: 10px; }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: bold; color: #333; margin-bottom: 5px; font-size: 14px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    
+    /* Requirements Grid */
+    .req-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; }
+    .req-item { display: flex; align-items: flex-start; gap: 10px; }
+    .req-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; }
+    .req-details { font-size: 12px; color: #666; margin-top: 2px; display: block; }
+
+    /* Additional Schedule Section */
+    .schedule-list { margin-top: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 4px; }
+    .schedule-item { background: #f1f1f1; padding: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    .btn-add-sched { background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 5px; }
+
+    .btn-submit { background: #022d6d; color: white; padding: 15px 30px; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
+    .btn-submit:hover { background: #001a4d; }
+
+    .error-msg { color: #dc3545; font-size: 12px; margin-top: 5px; display: none; }
+
+    /* CUSTOM ALERT OVERLAY */
+    .custom-alert-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    .custom-alert-overlay.show { display: flex; }
+
+    .custom-alert-box {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      min-width: 350px;
+      max-width: 450px;
+      overflow: hidden;
+      animation: alertSlideDown 0.3s ease;
+    }
+    @keyframes alertSlideDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
+
+    .custom-alert-header {
+      background: linear-gradient(135deg, #022d6d 0%, #034a9e 100%);
+      color: white;
+      padding: 15px 20px;
+      font-weight: 600;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .custom-alert-body { padding: 25px 20px; color: #333; font-size: 14px; line-height: 1.6; }
+    .custom-alert-footer { padding: 15px 20px; text-align: right; border-top: 1px solid #e0e0e0; display: flex; justify-content: flex-end; gap: 10px; }
+
+    .custom-alert-btn {
+      background: #022d6d; color: white; border: none; padding: 8px 25px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600;
+    }
+    .custom-alert-btn-cancel {
+      background: #757575; color: white; border: none; padding: 8px 25px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .main-content { margin-left: 0; padding: 20px; margin-top: 60px; }
+        .sidebar { display: none; }
+        .form-grid, .req-grid { grid-template-columns: 1fr; }
+        .calendar-wrapper { height: 500px; }
+    }
+
+    .nav-right .account-link { color: #ccc; font-size: 12px; text-decoration: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; transition: 0.3s; }
+    .nav-right .account-link:hover { color: white; border-color: white; }
+  </style>
+</head>
+<body>
+
+  <!-- CUSTOM ALERT OVERLAY -->
+  <div class="custom-alert-overlay" id="customAlertOverlay">
+    <div class="custom-alert-box">
+      <div class="custom-alert-header">
+        <span id="customAlertIcon">ℹ️</span>
+        <span id="customAlertTitle">Message</span>
+      </div>
+      <div class="custom-alert-body" id="customAlertBody">Alert message here</div>
+      <div class="custom-alert-footer" id="customAlertFooter">
+        <!-- Buttons injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <div class="nav-title">
+        <span class="main-title">University of Makati - ECP</span>
+        <span class="org-name" id="orgNameDisplay">Loading...</span>
+      </div>
+    </div>
+    <div class="nav-right">
+        <a href="org_account.html" class="account-link">⚙️ Settings</a>
+    </div>
+  </nav>
+
+
+  <div class="sidebar">
+    <div>
+      <a href="org_dashboard.html">Dashboard</a>
+      <a href="org_events.html">My Events</a>
+      <a href="#" class="active">Create Event</a>
+      <a href="org_scan_qr.html">Scan QR Code</a>
+      <a href="org_evaluations.html">Evaluations</a>
+      <a href="org_messages.html">Messages</a>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="main-content">
+    <!-- CALENDAR CHECKER -->
+    <div class="calendar-wrapper">
+        <h3 style="color:#022d6d; margin-bottom:15px;">Check Venue Availability</h3>
+        <div id="calendar"></div>
+    </div>
+
+    <div class="form-container">
+        <h2 style="color:#022d6d; text-align:center; margin-bottom:30px;">Event Application Form</h2>
+        
+        <form id="createEventForm" enctype="multipart/form-data">
+            <!-- 1. EVENT DETAILS & TARGET AUDIENCE -->
+            <div class="form-section">
+                <h3>I. Event Details & Audience</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Event Title *</label>
+                        <input type="text" name="event_name" required placeholder="e.g., General Assembly">
+                    </div>
+                    <div class="form-group">
+                        <label>Event Type</label>
+                        <select name="event_type">
+                            <option value="Academic">Academic</option>
+                            <option value="Social">Social</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Cultural">Cultural</option>
+                            <option value="Seminar">Seminar</option>
+                            <option value="Workshop">Workshop</option>
+                            <option value="Competition">Competition</option>
+                            <option value="Symposium">Symposium</option>
+                            <option value="Convention">Convention</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target College</label>
+                        <select name="target_college">
+                            <option value="All">All Colleges</option>
+                            <option value="CLAS">CLAS - College of Liberal Arts and Sciences</option>
+                            <option value="CHK">CHK - College of Human Kinetics</option>
+                            <option value="CBFS">CBFS - College of Business and Financial Science</option>
+                            <option value="CCIS">CCIS - College of Computing and Information Sciences</option>
+                            <option value="CITE">CITE - College of Innovative Teacher Education</option>
+                            <option value="CGPP">CGPP - College of Governance and Public Policy</option>
+                            <option value="CCSE">CCSE - College of Construction Sciences and Engineering</option>
+                            <option value="CET">CET - College of Engineering and Technology</option>
+                            <option value="CTHM">CTHM - College of Tourism and Hospitality Management</option>
+                            <option value="CCAPS">CCAPS - Center for Continuing, Advanced and Professional Studies</option>
+                            <option value="IAD">IAD - Institute of Art and Design</option>
+                            <option value="IOA">IOA - Institute of Accountancy</option>
+                            <option value="IOP">IOP - Institute of Pharmacy</option>
+                            <option value="ION">ION - Institute of Nursing</option>
+                            <option value="IIHS">IIHS - Institute of Imaging Health Sciences</option>
+                            <option value="ITEST">ITEST - Institute of Technical Education and Skills Training</option>
+                            <option value="ISDNB">ISDNB - Institute of Social Development and Nation Building</option>
+                            <option value="IOPsy">IOPsy - Institute of Psychology</option>
+                            <option value="ISW">ISW - Institute of Social Work</option>
+                            <option value="IDEM">IDEM - Institute of Disaster and Emergency Management</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Banner Image</label>
+                        <input type="file" name="banner_image" id="bannerInput" accept="image/*">
+                    </div>
+                </div>
+
+                <!-- Venue & Schedule Selection with Smart Capacity Check -->
+                <div style="background: #f0f4f8; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color:#022d6d; margin-bottom:10px;">Main Schedule</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Venue *</label>
+                            <select name="venue_id" id="venueSelect" required onchange="checkCapacity()">
+                                <option value="">Loading Venues...</option>
+                            </select>
+                            <small id="venueCapDisplay" style="color:#022d6d;"></small>
+                        </div>
+                        <div class="form-group">
+                            <label>Target Capacity *</label>
+                            <input type="number" name="attendees_capacity" id="inputCapacity" required value="50" oninput="checkCapacity()">
+                            <span class="error-msg" id="capError">Capacity exceeds venue limit!</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" name="event_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time *</label>
+                            <div style="display:flex; gap:5px;">
+                                <input type="time" name="start_time" required>
+                                <span style="align-self:center;">to</span>
+                                <input type="time" name="end_time" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Registration Window -->
+                    <h4 style="color:#022d6d; margin-top:15px; margin-bottom:10px;">Registration Window (Optional)</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Start Registration</label>
+                            <input type="datetime-local" name="registration_start">
+                        </div>
+                        <div class="form-group">
+                            <label>End Registration</label>
+                            <input type="datetime-local" name="registration_end">
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Schedules UI (Mockup for now, stores in hidden field) -->
+                    <div style="margin-top:10px; border-top:1px solid #ddd; padding-top:10px;">
+                        <label style="font-size:13px; color:#666;">Additional Venues/Schedules (Optional)</label>
+                        <div id="scheduleList" class="schedule-list"></div>
+                        <button type="button" class="btn-add-sched" onclick="addSchedule()">+ Add Another Venue/Time</button>
+                        <input type="hidden" name="additional_schedules" id="additionalSchedulesInput">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label>Description / Objective *</label>
+                    <textarea name="description" rows="4" required placeholder="Describe the event objectives, flow, and importance..."></textarea>
+                </div>
+            </div>
+
+            <!-- 2. LOGISTICS & REQUIREMENTS -->
+            <div class="form-section">
+                <h3>II. Office Requirements & Logistics</h3>
+                <p style="font-size:12px; color:#666; margin-bottom:15px;">Check items to request from specific offices.</p>
+                
+                <div class="req-grid">
+                    <!-- SPMO -->
+                    <div class="req-item">
+                        <input type="checkbox" name="req_chairs_check" onchange="toggleInput('req_chairs_qty', this)">
+                        <div>
+                            <label>Extra Chairs (SPMO)</label>
+                            <input type="number" name="req_chairs_qty" id="req_chairs_qty" placeholder="Qty" style="width:80px; padding:5px; display:none; margin-top:5px;">
+                        </div>
+                    </div>
+                    <div class="req-item">
+                        <input type="checkbox" name="req_tables_check" onchange="toggleInput('req_tables_qty', this)">
+                        <div>
+                            <label>Extra Tables (SPMO)</label>
+                            <input type="number" name="req_tables_qty" id="req_tables_qty" placeholder="Qty" style="width:80px; padding:5px; display:none; margin-top:5px;">
+                        </div>
+                    </div>
+
+                    <!-- CIT -->
+                    <div class="req-item">
+                        <input type="checkbox" name="req_internet">
+                        <div>
+                            <label>Internet/Wi-Fi (CIT)</label>
+                            <span class="req-details">For livestream/guests</span>
+                        </div>
+                    </div>
+                    <div class="req-item">
+                        <input type="checkbox" name="req_projector">
+                        <div>
+                            <label>Projector/LED Wall (CIT)</label>
+                            <span class="req-details">Multimedia support</span>
+                        </div>
+                    </div>
+
+                    <!-- GSO -->
+                    <div class="req-item">
+                        <input type="checkbox" name="req_sound">
+                        <div>
+                            <label>Sound System (GSO)</label>
+                            <span class="req-details">Microphones, Speakers</span>
+                        </div>
+                    </div>
+                    <div class="req-item">
+                        <input type="checkbox" name="req_cleaning" checked>
+                        <div>
+                            <label>Janitorial (GSO)</label>
+                            <span class="req-details">Pre/Post Cleaning</span>
+                        </div>
+                    </div>
+                    <div class="req-item">
+                        <input type="checkbox" name="req_aircon" checked>
+                        <div>
+                            <label>Air Conditioning (GSO)</label>
+                            <span class="req-details">Venue Cooling</span>
+                        </div>
+                    </div>
+
+                    <!-- OHSO / Security -->
+                    <div class="req-item">
+                        <input type="checkbox" name="req_medical">
+                        <div>
+                            <label>Medical Team (OHSO)</label>
+                            <span class="req-details">First Aid Standby</span>
+                        </div>
+                    </div>
+                    <div class="req-item">
+                        <input type="checkbox" name="req_parking">
+                        <div>
+                            <label>Parking Space (OHSO)</label>
+                            <span class="req-details">For Guests/VIPs</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Food -->
+                    <div class="req-item">
+                        <input type="checkbox" name="req_food">
+                        <div>
+                            <label>Food/Catering (OHSO)</label>
+                            <span class="req-details">Permit needed</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:15px;">
+                    <label>Logistics Remarks</label>
+                    <textarea name="req_remarks" rows="2" placeholder="Specific details (e.g., '3 Wireless Mics needed', 'VIP Parking for 2 cars')"></textarea>
+                </div>
+            </div>
+
+            <!-- 3. FINANCIAL -->
+            <div class="form-section">
+                <h3>III. Financial (Accounting Office)</h3>
+                <div class="form-group">
+                    <label>Rental Fee (Optional)</label>
+                    <input type="number" name="rental_fee" placeholder="Leave blank if Student Event / Free">
+                    <span class="req-details">Only applicable for income-generating projects or external partnerships.</span>
+                </div>
+            </div>
+
+            <input type="hidden" name="created_by_org" id="orgIdInput">
+            <input type="hidden" name="status" value="Pending Approval">
+
+            <button type="submit" class="btn-submit" id="submitBtn">Submit Event Proposal</button>
+        </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+  <script>
+    const API_BASE = '../../api';
+    const orgId = localStorage.getItem('orgId');
+    const orgName = localStorage.getItem('orgName');
+
+    if(!orgId) window.location.href = '../login_signup.html';
+    document.getElementById('orgNameDisplay').innerText = orgName;
+    document.getElementById('orgIdInput').value = orgId;
+
+    let venuesList = [];
+    let additionalSchedules = [];
+
+    // Custom Alert Function
+    function customAlert(message, type = 'info', callback) {
+        const overlay = document.getElementById('customAlertOverlay');
+        const icon = document.getElementById('customAlertIcon');
+        const title = document.getElementById('customAlertTitle');
+        const body = document.getElementById('customAlertBody');
+        const footer = document.getElementById('customAlertFooter');
+
+        if (type === 'success') { icon.textContent = '✅'; title.textContent = 'Success'; }
+        else if (type === 'error') { icon.textContent = '❌'; title.textContent = 'Error'; }
+        else if (type === 'confirm') { icon.textContent = '❓'; title.textContent = 'Confirm Action'; }
+        else { icon.textContent = 'ℹ️'; title.textContent = 'Info'; }
+
+        body.innerHTML = message; // Allow HTML formatting
+        
+        if (type === 'confirm') {
+            footer.innerHTML = `
+                <button class="custom-alert-btn-cancel" id="btnCancel">Cancel</button>
+                <button class="custom-alert-btn" id="btnConfirm">Confirm</button>
+            `;
+            document.getElementById('btnConfirm').onclick = () => { overlay.classList.remove('show'); if(callback) callback(true); };
+            document.getElementById('btnCancel').onclick = () => { overlay.classList.remove('show'); if(callback) callback(false); };
+        } else {
+            footer.innerHTML = `<button class="custom-alert-btn" onclick="document.getElementById('customAlertOverlay').classList.remove('show')">OK</button>`;
+        }
+        
+        overlay.classList.add('show');
+    }
+
+    // Toggle quantity inputs
+    function toggleInput(inputId, checkbox) {
+        const input = document.getElementById(inputId);
+        input.style.display = checkbox.checked ? 'block' : 'none';
+        if(!checkbox.checked) input.value = '';
+    }
+
+    // Load Venues
+    async function loadVenues() {
+        const res = await fetch(`${API_BASE}/student_venues.php`); 
+        const data = await res.json();
+        const sel = document.getElementById('venueSelect');
+        sel.innerHTML = '<option value="">Select Venue</option>';
+        
+        if(data.success) {
+            venuesList = data.venues;
+            data.venues.forEach(v => {
+                sel.innerHTML += `<option value="${v.venue_id}" data-cap="${v.capacity}">${v.venue_name}</option>`;
+            });
+        }
+    }
+
+    // Smart Capacity Check
+    function checkCapacity() {
+        const sel = document.getElementById('venueSelect');
+        const selectedOption = sel.options[sel.selectedIndex];
+        const inputCap = parseInt(document.getElementById('inputCapacity').value) || 0;
+        const errorMsg = document.getElementById('capError');
+        const venueDisplay = document.getElementById('venueCapDisplay');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (selectedOption.value) {
+            const venueCap = parseInt(selectedOption.getAttribute('data-cap'));
+            venueDisplay.innerText = `Max Capacity: ${venueCap}`;
+
+            if (inputCap > venueCap) {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = `Error: Capacity (${inputCap}) exceeds venue limit (${venueCap}). Pick a larger venue.`;
+                submitBtn.disabled = true;
+                submitBtn.style.backgroundColor = '#ccc';
+            } else {
+                errorMsg.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.style.backgroundColor = '#022d6d';
+            }
+        } else {
+            venueDisplay.innerText = '';
+            errorMsg.style.display = 'none';
+        }
+    }
+
+    // Calendar
+    async function initCalendar() {
+        const res = await fetch(`${API_BASE}/admin_events.php?action=calendar`);
+        const events = await res.json();
+
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: '100%',
+            events: events,
+            headerToolbar: { left: 'prev,next', center: 'title', right: 'dayGridMonth,listWeek' },
+            eventClick: function(info) {
+                const e = info.event.extendedProps;
+                const startTime = new Date(info.event.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                const endTime = new Date(info.event.end).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                
+                const details = `
+                    <div style='text-align:left;'>
+                        <h3 style='color:#022d6d; margin-top:0; border-bottom:2px solid #f36b00; padding-bottom:5px;'>${info.event.title}</h3>
+                        <p><b>Status:</b> <span style='background:${info.event.backgroundColor}; color:white; padding:2px 6px; border-radius:4px; font-size:11px;'>${e.status}</span></p>
+                        <p><b>Time:</b> ${startTime} - ${endTime}</p>
+                        <p><b>Venue:</b> ${e.venue_name || 'TBD'}</p>
+                        <p><b>Target:</b> ${e.target_college || 'All'}</p>
+                        <p><b>Capacity:</b> ${e.attendees_capacity || 'N/A'}</p>
+                        <p><b>Type:</b> ${e.event_type || 'General'}</p>
+                    </div>
+                `;
+                customAlert(details, 'info');
+            }
+        });
+        calendar.render();
+    }
+
+    // Add Additional Schedule Logic
+    function addSchedule() {
+        const date = prompt("Enter Date (YYYY-MM-DD):");
+        const time = prompt("Enter Time (e.g., 8am-5pm):");
+        const loc = prompt("Enter Venue Name:");
+
+        if(date && time && loc) {
+            additionalSchedules.push({ date, time, location: loc });
+            renderSchedules();
+        }
+    }
+
+    function renderSchedules() {
+        const container = document.getElementById('scheduleList');
+        container.innerHTML = '';
+        additionalSchedules.forEach((s, idx) => {
+            container.innerHTML += `
+                <div class="schedule-item">
+                    <span>${s.date} |${s.time} |${s.location}</span>
+                    <button type="button" onclick="removeSchedule(${idx})" style="color:red; background:none; border:none; cursor:pointer;">✖</button>
+                </div>`;
+        });
+        document.getElementById('additionalSchedulesInput').value = JSON.stringify(additionalSchedules);
+    }
+
+    function removeSchedule(idx) {
+        additionalSchedules.splice(idx, 1);
+        renderSchedules();
+    }
+
+    // Handle Submit
+    document.getElementById('createEventForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        customAlert("Submit this event proposal? It will be sent to CSOA for initial approval.", 'confirm', async (confirmed) => {
+            if(confirmed) {
+                const formData = new FormData(document.getElementById('createEventForm'));
+                
+                if(additionalSchedules.length > 0) {
+                    const currentDesc = formData.get('description');
+                    let schedText = "\n\n[Additional Schedules]:\n";
+                    additionalSchedules.forEach(s => schedText += `- ${s.date} @ ${s.time} in ${s.location}\n`);
+                    formData.set('description', currentDesc + schedText);
+                }
+                
+                try {
+                    const res = await fetch(`${API_BASE}/org_create_event.php`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await res.json();
+
+                    if(result.success) {
+                        customAlert("Event Created Successfully! Status: Pending Approval", 'success');
+                        // Clear file input manually
+                        document.getElementById('bannerInput').value = ''; 
+                        setTimeout(() => window.location.href = 'org_events.html', 2000);
+                    } else {
+                        customAlert("Error: " + result.message, 'error');
+                    }
+                } catch(err) {
+                    console.error(err);
+                    customAlert("Connection Error", 'error');
+                }
+            }
+        });
+    });
+
+    function logout() {
+        customAlert("Are you sure you want to logout?", 'confirm', (confirmed) => {
+            if(confirmed) {
+                localStorage.removeItem('orgId');
+                window.location.href = '../login_signup.html';
+            }
+        });
+    }
+
+    // Set min date to today
+    document.querySelector('input[name="event_date"]').setAttribute('min', new Date().toISOString().split('T')[0]);
+
+    loadVenues();
+    initCalendar();
+  </script>
+</body>
+</html>

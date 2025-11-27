@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University of Makati - ECP</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Century Gothic';
+    }
+
+    body {
+      background-color: #f4f5f7;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 30px;
+      height: 60px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    nav img {
+      height: 35px;
+      margin-left: 10px;
+    }
+
+    nav span {
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-right .account-link {
+      color: #ccc;
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      border-radius: 15px;
+      transition: 0.3s;
+    }
+
+    .nav-right .account-link:hover {
+      color: white;
+      border-color: white;
+    }
+
+    /* SIDEBAR */
+    .sidebar{
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 200px;
+      background-color: white;
+      bottom: 0;
+      border-right: 1px solid #ddd;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 20px;
+      color: #022d6d;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #022d6d;
+      color: white;
+      border-radius: 4px;
+      margin: 0 10px;
+    }
+
+    .btn-logout {
+      background-color: #f30000;
+      color: white;
+      border: none;
+      width: 80%;
+      padding: 10px;
+      margin: auto 10% 20px;
+      border-radius: 3px;
+      cursor: pointer;
+      align-self: center;
+    }
+
+    .btn-logout:hover {
+      background-color: #d00000;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      margin-left: 210px;
+      margin-top: 80px;
+      padding: 20px 40px;
+      flex: 1;
+    }
+
+    .main-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .main-title h2 {
+      color: #f36b00;
+      font-weight: normal;
+    }
+
+    .main-title button {
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px 15px;
+      cursor: pointer;
+      color: #022d6d;
+      font-size: 13px;
+    }
+
+    .main-title button:hover {
+      background-color: #f4f5f7;
+    }
+
+    /* CONTENT WRAPPER */
+    .content-wrapper {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    /* FILTER BOX */
+    .filter-box {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 260px;
+      height: fit-content;
+    }
+
+    .filter-box input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .filter-box select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .filter-box label {
+      display: block;
+      font-size: 13px;
+      color: #022d6d;
+      margin-bottom: 5px;
+      margin-top: 10px;
+    }
+
+    .filter-box input[type="checkbox"] {
+      margin-right: 5px;
+    }
+
+    /* EVENT CARD */
+    .events-container {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .event-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      width: 300px;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+
+    .event-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .event-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .event-details {
+      padding: 10px 15px;
+      text-align: left;
+    }
+
+    .event-details h3 {
+      font-size: 15px;
+      color: #022d6d;
+      margin-bottom: 10px;
+    }
+
+    .event-details p {
+      font-size: 13px;
+      color: #555;
+      margin: 3px 0;
+    }
+
+    .event-footer {
+      text-align: center;
+      padding: 8px;
+      color: #022d6d;
+      font-size: 13px;
+      font-weight: bold;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+    
+    .event-slots {
+        color: #28a745;
+        font-size: 12px;
+    }
+    .event-slots.full {
+        color: #dc3545;
+    }
+
+    /* EVENT DESCRIPTION VIEW */
+    #event-description {
+      display: none;
+    }
+
+    .event-header {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      margin-top: 10px;
+    }
+
+    .event-header img {
+      width: 400px;
+      border-radius: 8px;
+    }
+
+    .event-info h2 {
+      color: #022d6d;
+    }
+
+    .event-info p {
+      font-size: 14px;
+      margin: 15px 0;
+      color: #333;
+    }
+
+    .info-block {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .reg-window {
+        font-size: 13px;
+        color: #f36b00;
+        font-weight: bold;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .description, .host {
+      margin-top: 25px;
+    }
+
+    .description h3, .host h3 {
+      color: #022d6d;
+      margin-bottom: 10px;
+    }
+
+    .host div {
+      background-color: white;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      width: fit-content;
+    }
+
+    .back-btn {
+      background-color: #022d6d;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    .back-btn:hover {
+      background-color: #00328f;
+    }
+
+    /* REGISTER BUTTON */
+    .btn-register {
+      background-color: #022d6d;
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 20px;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+
+    .btn-register:hover {
+      background-color: #f36b00;
+    }
+
+    .btn-register:disabled {
+      background-color: #9e9e9e;
+      cursor: not-allowed;
+    }
+
+    .btn-register.registered {
+      background-color: #28a745;
+      cursor: not-allowed;
+    }
+
+    /* FOOTER STYLE */
+    footer {
+      background-color: #242424;
+      color: #f36b00;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding: 40px 80px;
+      font-size: 16px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+
+    footer .footer-section {
+      max-width: 400px;
+      margin-left: 120px;
+    }
+
+    footer h4 {
+      color: #f36b00;
+      margin-bottom: 10px;
+    }
+
+    footer p {
+      color: white;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    footer a {
+      color: white;
+      text-decoration: underline;
+      font-size: 14px;
+    }
+
+    footer a:hover {
+      color: #f36b00;
+    }
+
+    .no-events-message {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+
+    .no-events-message h3 {
+      color: #022d6d;
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+    }
+
+    /* CUSTOM ALERT STYLES */
+    .custom-alert-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .custom-alert-overlay.show {
+      display: flex;
+    }
+
+    .custom-alert-box {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      width: 400px;
+      max-width: 90%;
+      overflow: hidden;
+    }
+
+    .custom-alert-header {
+      background-color: #022d6d;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .custom-alert-icon {
+      font-size: 24px;
+    }
+
+    .custom-alert-body {
+      padding: 20px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .custom-alert-footer {
+      padding: 15px 20px;
+      text-align: right;
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .custom-alert-btn {
+      background-color: #022d6d;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .custom-alert-btn:hover {
+      background-color: #00328f;
+    }
+
+    .custom-alert-btn-cancel {
+      background-color: #ccc;
+      color: #333;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .custom-alert-btn-cancel:hover {
+      background-color: #bbb;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- CUSTOM ALERT OVERLAY -->
+  <div class="custom-alert-overlay" id="customAlertOverlay">
+    <div class="custom-alert-box">
+      <div class="custom-alert-header">
+        <span class="custom-alert-icon" id="customAlertIcon">ℹ️</span>
+        <span id="customAlertTitle">Message</span>
+      </div>
+      <div class="custom-alert-body" id="customAlertBody">
+        Alert message here
+      </div>
+      <div class="custom-alert-footer" id="customAlertFooter">
+        <button class="custom-alert-btn" id="customAlertBtn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <span>University of Makati - ECP</span>
+    </div>
+    <div class="nav-right">
+      <a href="student_account.html" class="account-link">⚙️ Settings</a>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <a href="student_dashboard.html" class="sidebar-link">Dashboard</a>
+    <a href="student_events.html" class="sidebar-link active">Events</a>
+    <a href="student_venues.html" class="sidebar-link">Venues</a>
+    <a href="student_post_eval.html" class="sidebar-link">Post-Evaluation</a>
+    <a href="student_my_events.html" class="sidebar-link">My Events</a>
+    <a href="student_messages.html" class="sidebar-link">Messages</a>
+    <button class="btn-logout" id="logoutBtn">Logout</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <!-- EVENTS LIST -->
+    <div id="events-list">
+      <div class="main-title">
+        <h2>Events</h2>
+        <button id="togglePastEventsBtn">Show Past Events</button>
+      </div>
+
+      <div class="content-wrapper">
+        <div class="filter-box">
+          <input type="text" id="searchInput" placeholder="🔍 Search Events">
+          <label><input type="checkbox" id="onlineFilter"> Online</label>
+          <label>Colleges</label>
+          <select id="collegeFilter">
+            <option value="">All Colleges</option>
+          </select>
+          <label>Categories</label>
+          <select id="categoryFilter">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+
+        <div class="events-container" id="eventsContainer">
+          <!-- Events will be loaded here dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- EVENT DESCRIPTION -->
+    <div id="event-description">
+      <button class="back-btn" id="backToEventsBtn">← Back to Events</button>
+      <div class="event-header">
+        <img id="eventDetailImage" src="EVENT1.jpg" alt="Event Image">
+        <div class="event-info">
+          <h2 id="eventDetailTitle">Event Title</h2>
+          
+          <div class="info-block">
+              <p id="eventDetailDate">📅 Date and Time</p>
+              <p id="eventDetailLocation">📍 Location</p>
+              <p id="eventDetailType">📂 Type</p>
+              <p id="eventDetailStatus">🕒 Status</p>
+              <p id="eventDetailSlots">🔢 Slots Available: </p>
+          </div>
+          
+          <span class="reg-window" id="regWindowText"></span>
+          <button class="btn-register" id="btnRegister">Register</button>
+        </div>
+      </div>
+
+      <div class="description">
+        <h3>Description</h3>
+        <p id="eventDetailDescription">Event description will appear here.</p>
+      </div>
+
+      <div class="host">
+        <h3>Host Organization</h3>
+        <div id="eventDetailHost">Host Organization</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-section">
+      <h4>About ECP</h4>
+      <p>
+        The Event Coordination Portal serves as the central management system for events
+        organized by the colleges of the University of Makati. It intends to oversee event
+        operations, track student participation, and maintain an updated event calendar.
+      </p>
+    </div>
+    <div class="footer-section">
+      <h4>Links</h4>
+      <a href="https://www.umak.edu.ph/" target="_blank">University of Makati</a>
+    </div>
+  </footer>
+
+  <script>
+    // API Configuration
+    const API_BASE = '../../api';
+    let currentStudentId = null;
+    let allEvents = [];
+    let showPastEvents = false;
+    let currentEvent = null;
+
+    // Custom Alert Function
+    function customAlert(message, type = 'info') {
+      const overlay = document.getElementById('customAlertOverlay');
+      const icon = document.getElementById('customAlertIcon');
+      const title = document.getElementById('customAlertTitle');
+      const body = document.getElementById('customAlertBody');
+      const footer = document.getElementById('customAlertFooter');
+
+      if (type === 'success') {
+        icon.textContent = '✅'; title.textContent = 'Success';
+      } else if (type === 'error') {
+        icon.textContent = '❌'; title.textContent = 'Error';
+      } else if (type === 'warning') {
+        icon.textContent = '⚠️'; title.textContent = 'Warning';
+      } else {
+        icon.textContent = 'ℹ️'; title.textContent = 'Information';
+      }
+
+      body.textContent = message;
+      footer.innerHTML = '<button class="custom-alert-btn" id="customAlertBtn">OK</button>';
+      overlay.classList.add('show');
+
+      document.getElementById('customAlertBtn').onclick = function() {
+        overlay.classList.remove('show');
+      };
+
+      overlay.onclick = function(e) {
+        if (e.target === overlay) {
+          overlay.classList.remove('show');
+        }
+      };
+    }
+
+    // Custom Confirm Function
+    function customConfirm(message, callback, confirmText = 'OK', cancelText = 'Cancel') {
+      const overlay = document.getElementById('customAlertOverlay');
+      const icon = document.getElementById('customAlertIcon');
+      const title = document.getElementById('customAlertTitle');
+      const body = document.getElementById('customAlertBody');
+      const footer = document.getElementById('customAlertFooter');
+
+      icon.textContent = '❓';
+      title.textContent = 'Confirm Action';
+      body.textContent = message;
+      
+      footer.innerHTML = `
+        <button class="custom-alert-btn-cancel" id="customCancelBtn">${cancelText}</button>
+        <button class="custom-alert-btn" id="customConfirmBtn">${confirmText}</button>
+      `;
+      
+      overlay.classList.add('show');
+
+      document.getElementById('customConfirmBtn').onclick = function() {
+        overlay.classList.remove('show');
+        callback(true);
+      };
+
+      document.getElementById('customCancelBtn').onclick = function() {
+        overlay.classList.remove('show');
+        callback(false);
+      };
+
+      overlay.onclick = function(e) {
+        if (e.target === overlay) {
+          overlay.classList.remove('show');
+          callback(false);
+        }
+      };
+    }
+
+    // Load user session
+    function loadUserSession() {
+      const session = localStorage.getItem('user_session');
+      if (!session) {
+        window.location.href = '../login_signup.html';
+        return null;
+      }
+      const userData = JSON.parse(session);
+      if (userData.user_type !== 'student') {
+        customAlert('Access denied. This portal is for students only.', 'error');
+        localStorage.removeItem('user_session');
+        setTimeout(() => { window.location.href = '../login_signup.html'; }, 2000);
+        return null;
+      }
+      currentStudentId = userData.user_id;
+      return userData;
+    }
+
+    // Register for event
+    async function registerForEvent(eventId, eventName) {
+      customConfirm(
+        `Do you want to register for ${eventName}?`,
+        async function(confirmed) {
+          if (confirmed) {
+            try {
+              const response = await fetch(`${API_BASE}/student_register.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  student_id: currentStudentId,
+                  event_id: eventId
+                })
+              });
+
+              const result = await response.json();
+
+              if (result.success) {
+                customAlert('Thank you for registering!', 'success');
+                // Reload events to reflect new registration
+                setTimeout(() => {
+                  loadEvents();
+                  // Update the current event view if it matches
+                  if (currentEvent && currentEvent.event_id === eventId) {
+                    currentEvent.registration_status = 'Registered';
+                    currentEvent.current_attendees = (parseInt(currentEvent.current_attendees) || 0) + 1;
+                    updateRegisterButton();
+                  }
+                }, 1500);
+              } else {
+                customAlert(result.message || 'Registration failed. Please try again.', 'error');
+              }
+            } catch (error) {
+              console.error('Error registering for event:', error);
+              customAlert('Error connecting to server. Please try again.', 'error');
+            }
+          }
+        },
+        'YES',
+        'NO'
+      );
+    }
+
+    // Update register button based on registration status and slots
+    function updateRegisterButton() {
+      const btnRegister = document.getElementById('btnRegister');
+      const regWindowText = document.getElementById('regWindowText');
+      
+      if (!currentEvent) return;
+      
+      const slotsLeft = parseInt(currentEvent.attendees_capacity) - parseInt(currentEvent.current_attendees);
+      const status = currentEvent.status;
+      
+      // 1. Already Registered
+      if (currentEvent.registration_status === 'Registered') {
+        btnRegister.textContent = 'Already Registered';
+        btnRegister.className = 'btn-register registered';
+        btnRegister.disabled = true;
+        btnRegister.onclick = null;
+        return;
+      }
+      
+      // 2. Check Slots
+      if (slotsLeft <= 0) {
+          btnRegister.textContent = 'Event Full';
+          btnRegister.className = 'btn-register';
+          btnRegister.disabled = true;
+          btnRegister.onclick = null;
+          return;
+      }
+
+      // 3. Check Status
+      if (status === 'Registration Open') {
+          btnRegister.textContent = 'Register Now';
+          btnRegister.className = 'btn-register';
+          btnRegister.disabled = false;
+          btnRegister.onclick = () => registerForEvent(currentEvent.event_id, currentEvent.event_name);
+      } 
+      else if (status === 'Published') {
+          // Not yet open
+          btnRegister.disabled = true;
+          btnRegister.className = 'btn-register';
+          if (currentEvent.registration_start) {
+              const startDate = new Date(currentEvent.registration_start);
+              btnRegister.textContent = `Opens on ${startDate.toLocaleDateString()} ${startDate.toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'})}`;
+          } else {
+              btnRegister.textContent = 'Registration Not Yet Open';
+          }
+      } 
+      else {
+          // Closed, Ongoing, etc.
+          btnRegister.textContent = 'Registration Closed';
+          btnRegister.className = 'btn-register';
+          btnRegister.disabled = true;
+      }
+    }
+
+    async function loadEvents() {
+      if (!currentStudentId) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/student_event.php?student_id=${currentStudentId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          allEvents = result.events;
+          renderEvents(allEvents);
+        } else {
+          showNoEventsMessage();
+        }
+      } catch (error) {
+        console.error('Error loading events:', error);
+        customAlert('Connection error.', 'error');
+      }
+    }
+
+    function renderEvents(events) {
+      const eventsContainer = document.getElementById('eventsContainer');
+      eventsContainer.innerHTML = '';
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let filteredEvents = events.filter(event => {
+        const eventDate = new Date(event.event_date);
+        eventDate.setHours(0, 0, 0, 0);
+        
+        if (showPastEvents) {
+          return eventDate < today;
+        } else {
+          return eventDate >= today;
+        }
+      });
+
+      const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+      if (searchQuery) {
+        filteredEvents = filteredEvents.filter(event => event.event_name.toLowerCase().includes(searchQuery));
+      }
+
+      if (filteredEvents.length === 0) {
+        eventsContainer.innerHTML = `
+          <div class="no-events-message">
+            <h3>No ${showPastEvents ? 'past' : 'upcoming'} events found</h3>
+            <p>${searchQuery ? 'Try a different search term!' : 'Check back later!'}</p>
+          </div>
+        `;
+        return;
+      }
+
+      filteredEvents.forEach(event => {
+        const eventDate = new Date(event.event_date);
+        const formattedDate = eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        const slots = parseInt(event.attendees_capacity) - parseInt(event.current_attendees);
+        
+        const card = document.createElement('div');
+        card.className = 'event-card';
+        card.onclick = () => showEventDetails(event);
+        
+        card.innerHTML = `
+          <img src="${event.banner_image || '../../EVENT1.jpg'}" alt="Event Image">
+          <div class="event-details">
+            <h3>${event.event_name}</h3>
+            <p>📅 ${formattedDate}</p>
+            <p>📍 ${event.venue_name}</p>
+          </div>
+          <div class="event-footer">
+            <span>${event.organization_name || 'University'}</span>
+            <span class="event-slots ${slots <= 0 ? 'full' : ''}">${slots > 0 ? slots + ' Slots Left' : 'FULL'}</span>
+          </div>
+        `;
+        
+        eventsContainer.appendChild(card);
+      });
+    }
+
+    function showEventDetails(event) {
+      currentEvent = event;
+      
+      document.getElementById('events-list').style.display = 'none';
+      document.getElementById('event-description').style.display = 'block';
+
+      const eventDate = new Date(event.event_date);
+      const formattedDate = eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      const startTime = formatTime(event.start_time);
+      const endTime = formatTime(event.end_time);
+      
+      const slots = parseInt(event.attendees_capacity) - parseInt(event.current_attendees);
+
+      document.getElementById('eventDetailImage').src = event.banner_image || '../../EVENT1.jpg';
+      document.getElementById('eventDetailTitle').textContent = event.event_name;
+      
+      document.getElementById('eventDetailDate').innerHTML = `📅 <b>Date:</b> ${formattedDate} <br> 🕒 <b>Time:</b> ${startTime} - ${endTime}`;
+      document.getElementById('eventDetailLocation').innerHTML = `📍 <b>Venue:</b> ${event.venue_name} (${event.location})`;
+      document.getElementById('eventDetailType').innerHTML = `📂 <b>Type:</b> ${event.event_type || 'General'}`;
+      document.getElementById('eventDetailStatus').innerHTML = `📢 <b>Status:</b> ${event.status}`;
+      
+      const slotElem = document.getElementById('eventDetailSlots');
+      slotElem.innerHTML = `🔢 <b>Slots:</b> ${slots > 0 ? slots + ' remaining' : '<span style="color:red">FULL</span>'}`;
+      
+      // Show Reg Dates if set
+      const regWindow = document.getElementById('regWindowText');
+      if (event.registration_start && event.registration_end) {
+          const start = new Date(event.registration_start).toLocaleString();
+          const end = new Date(event.registration_end).toLocaleString();
+          regWindow.textContent = `Registration Window: ${start} to ${end}`;
+      } else {
+          regWindow.textContent = '';
+      }
+
+      document.getElementById('eventDetailDescription').textContent = event.description || 'No description available.';
+      document.getElementById('eventDetailHost').textContent = event.organization_name || 'University of Makati';
+      
+      updateRegisterButton();
+    }
+
+    function formatTime(timeString) {
+      const [hours, minutes] = timeString.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    }
+
+    function showNoEventsMessage() {
+      document.getElementById('eventsContainer').innerHTML = `
+        <div class="no-events-message">
+          <h3>No events available</h3>
+          <p>Check back later for upcoming events!</p>
+        </div>`;
+    }
+
+    document.getElementById('backToEventsBtn').addEventListener('click', function() {
+      document.getElementById('event-description').style.display = 'none';
+      document.getElementById('events-list').style.display = 'block';
+      currentEvent = null;
+    });
+
+    document.getElementById('togglePastEventsBtn').addEventListener('click', function() {
+      showPastEvents = !showPastEvents;
+      this.textContent = showPastEvents ? 'Show Upcoming Events' : 'Show Past Events';
+      renderEvents(allEvents);
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+      customConfirm('Are you sure you want to logout?', function(confirmed) {
+        if (confirmed) {
+          localStorage.removeItem('user_session');
+          window.location.href = '../login_signup.html';
+        }
+      }, 'OK', 'Cancel');
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const userData = loadUserSession();
+      if (userData) loadEvents();
+      
+      document.getElementById('searchInput').addEventListener('input', function() {
+        renderEvents(allEvents);
+      });
+    });
+  </script>
+</body>
+</html>

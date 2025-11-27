@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University of Makati - ECP</title>
+  <style>
+    /* GLOBAL RESET & FONTS */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic', sans-serif; }
+    body { background-color: #f4f5f7; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 40px;
+      height: 70px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    nav img { height: 45px; margin-right: 15px; }
+    nav span { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; }
+
+    /* SECTIONS */
+    section { display: none; flex: 1; padding-top: 100px; padding-bottom: 40px; }
+    section.active { display: block; }
+
+    /* LOGIN CARD STYLES */
+    #login .main {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 60px;
+    }
+    .login-card {
+      background-color: white;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 50px;
+      border-radius: 8px;
+      width: 450px;
+      text-align: center;
+    }
+    .login-card h3 {
+      color: #f36b00;
+      font-weight: bold;
+      margin-bottom: 25px;
+      font-size: 24px;
+      text-align: left;
+    }
+
+    /* USER TYPE SELECTOR */
+    .user-type-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      background: #f0f2f5;
+      padding: 5px;
+      border-radius: 6px;
+    }
+    .user-type-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: #555;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+    .user-type-btn.active {
+      background-color: #022d6d;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* INPUT FIELDS */
+    .textbox {
+      display: block;
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      background-color: #fff;
+      border-radius: 4px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .textbox:focus { border-color: #022d6d; }
+
+    /* Password Toggle for Login */
+    .password-container {
+      display: flex;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #666;
+      font-size: 18px;
+    }
+
+    /* Password Wrapper for Signup Forms (Grid Layout) */
+    .password-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    .password-wrapper input {
+      width: 100%;
+      padding-right: 40px; /* Make space for the eye icon */
+    }
+
+    /* FORGOT PASSWORD LINK */
+    .forgot-link {
+      display: block;
+      text-align: right;
+      font-size: 12px;
+      color: #022d6d;
+      margin-bottom: 20px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    /* BUTTONS */
+    .login-btn {
+      background-color: #022d6d;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    .login-btn:hover { background-color: #00328f; }
+    .login-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+    /* ALERTS */
+    .error-message, .success-message {
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-bottom: 15px;
+      display: none;
+      text-align: left;
+    }
+    .error-message { color: #dc3545; background: #ffe6e6; border-left: 3px solid #dc3545; }
+    .success-message { color: #155724; background: #d4edda; border-left: 3px solid #155724; }
+
+    /* SIGNUP SECTION */
+    .create-account-section {
+      margin-top: 30px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+    .create-account-section h4 { color: #555; font-size: 14px; margin-bottom: 15px; font-weight: normal; }
+    .signup-options { display: flex; gap: 10px; justify-content: center; }
+    .signup-option-btn {
+      padding: 8px 15px;
+      background: #fff;
+      border: 1px solid #ddd;
+      color: #022d6d;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .signup-option-btn:hover { border-color: #022d6d; background: #f0f4f8; }
+
+    /* FORMS */
+    .main-container { display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
+    .form-container { background-color: white; border-radius: 8px; padding: 40px; width: 100%; max-width: 1000px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    
+    .warning-text {
+      color: #856404;
+      background-color: #fff3cd;
+      border-left: 5px solid #ffeeba;
+      padding: 15px;
+      margin-bottom: 25px;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+
+    form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group.full-width { grid-column: 1 / -1; }
+    .form-group label { font-size: 13px; color: #333; margin-bottom: 6px; font-weight: bold; }
+    .form-group label span { color: #dc3545; }
+    .form-group input, .form-group select, .form-group textarea { padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; font-family: 'Century Gothic', sans-serif; }
+    
+    .button-container { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+    .btn-back { background: white; border: 1px solid #ccc; padding: 10px 25px; border-radius: 4px; cursor: pointer; }
+    .btn-submit { background: #022d6d; color: white; border: none; padding: 10px 30px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+    /* CUSTOM ALERT MODAL */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 25px; border-radius: 8px; width: 400px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
+    .modal h3 { color: #022d6d; margin-bottom: 15px; }
+    .otp-input { letter-spacing: 5px; text-align: center; font-size: 24px; font-weight: bold; }
+    
+    /* Generic Alert/Confirm Styles */
+    .alert-title { font-weight: bold; color: #022d6d; margin-bottom: 10px; font-size: 18px; text-align: left; }
+    .alert-body { margin-bottom: 20px; color: #333; font-size: 14px; line-height: 1.5; text-align: left; }
+    .alert-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    
+    .btn-alert-ok { background-color: #022d6d; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-alert-cancel { background-color: #ccc; color: #333; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+    /* FOOTER */
+    footer { background-color: #242424; color: #f36b00; padding: 40px 60px; margin-top: auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 30px; }
+    .footer-col { max-width: 350px; }
+    .footer-col p, .footer-col a { color: #ccc; font-size: 13px; text-decoration: none; }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <img src="../images/UMAK LOGO.png" alt="UMak Logo">
+    <span>University of Makati - ECP</span>
+  </nav>
+
+  <!-- LOGIN SECTION -->
+  <section id="login" class="active">
+    <div class="main">
+      <div class="login-card">
+        <h3>Sign In</h3>
+        
+        <div class="user-type-selector">
+          <button class="user-type-btn active" data-type="student">Student</button>
+          <button class="user-type-btn" data-type="organization">Org</button>
+          <button class="user-type-btn" data-type="admin">Admin</button>
+        </div>
+
+        <input type="text" class="textbox" placeholder="Student Number" id="username">
+        <div class="password-container">
+          <input type="password" class="textbox" placeholder="Password" id="password">
+          <button class="password-toggle" type="button" onclick="togglePassword('password')">👁️</button>
+        </div>
+        
+        <!-- FORGOT PASSWORD LINK -->
+        <a href="#" class="forgot-link" onclick="openForgotModal()">Forgot Password?</a>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <button class="login-btn" onclick="login()" id="loginBtn">Log in</button>
+        
+        <div class="create-account-section">
+            <h4>New here? Create an account</h4>
+            <div class="signup-options">
+                <button class="signup-option-btn" onclick="showSection('student-signup')">Student</button>
+                <button class="signup-option-btn" onclick="showSection('organization-signup')">Organization</button>
+                <button class="signup-option-btn" onclick="showSection('admin-signup')">Admin</button>
+            </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUSTOM ALERT MODAL -->
+  <div class="modal" id="customAlertModal">
+      <div class="modal-content">
+          <div class="alert-title" id="alertTitle">Notification</div>
+          <div class="alert-body" id="alertMessage">Message goes here.</div>
+          <div class="alert-actions">
+              <button class="btn-alert-ok" id="btnAlertOk" onclick="closeAlert()">OK</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- OTP VERIFICATION MODAL (Used for Signup & Reset) -->
+  <div class="modal" id="otpModal">
+      <div class="modal-content">
+          <h3>Email Verification</h3>
+          <p style="font-size:13px; color:#666; margin-bottom:15px;">A verification code has been sent to your UMak Email.</p>
+          <p id="otpEmailDisplay" style="font-weight:bold; color:#022d6d; margin-bottom:15px;"></p>
+          <input type="text" id="otpInput" class="textbox otp-input" placeholder="XXXXXX" maxlength="6">
+          <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
+              <button class="btn-back" onclick="document.getElementById('otpModal').style.display='none'">Cancel</button>
+              <button class="btn-submit" id="btnConfirmOtp" onclick="verifyAndRegister()">Confirm</button>
+          </div>
+          <p id="otpMsg" style="margin-top:10px; font-size:12px;"></p>
+      </div>
+  </div>
+
+  <!-- FORGOT PASSWORD MODAL (Step 1: Email) -->
+  <div class="modal" id="forgotModal">
+      <div class="modal-content">
+          <h3>Reset Password</h3>
+          <p style="font-size:13px; color:#666; margin-bottom:15px;">Enter your email and user type to receive a reset code.</p>
+          
+          <select id="resetUserType" class="textbox">
+              <option value="student">Student</option>
+              <option value="organization">Organization</option>
+              <option value="admin">Admin</option>
+          </select>
+          <input type="email" id="resetEmail" class="textbox" placeholder="Enter your email">
+          
+          <button class="login-btn" onclick="sendResetCode()" id="btnReset">Send Code</button>
+          <button class="btn-back" style="width:100%; margin-top:10px; border:none;" onclick="document.getElementById('forgotModal').style.display='none'">Cancel</button>
+          
+          <p id="resetMsg" style="margin-top:10px; font-size:12px;"></p>
+      </div>
+  </div>
+
+  <!-- RESET CONFIRM MODAL (Step 2: OTP + New Pass) -->
+  <div class="modal" id="resetConfirmModal">
+      <div class="modal-content">
+          <h3>Set New Password</h3>
+          <p style="font-size:13px; color:#666; margin-bottom:15px;">Enter the code sent to your email and your new password.</p>
+          
+          <input type="text" id="resetOtpInput" class="textbox otp-input" placeholder="Code" maxlength="6">
+          <input type="password" id="newPass" class="textbox" placeholder="New Password">
+          <div style="text-align: left; font-size: 10px; color: #666; margin-bottom: 10px;">
+             Requires: 8+ chars, Uppercase, Number, Special Char
+          </div>
+          <input type="password" id="confirmNewPass" class="textbox" placeholder="Confirm New Password">
+          
+          <button class="login-btn" onclick="submitNewPassword()" id="btnSubmitNewPass">Update Password</button>
+          <button class="btn-back" style="width:100%; margin-top:10px; border:none;" onclick="document.getElementById('resetConfirmModal').style.display='none'">Cancel</button>
+          
+          <p id="resetConfirmMsg" style="margin-top:10px; font-size:12px;"></p>
+      </div>
+  </div>
+
+  <!-- STUDENT SIGNUP -->
+  <section id="student-signup">
+    <div class="main-container">
+      <h2>Student Registration</h2>
+      <div class="form-container">
+        <form id="studentForm">
+          <div class="form-group"><label>Last Name <span>*</span></label><input type="text" name="lastname" id="stu_lname" oninput="genStudentEmail()" required></div>
+          <div class="form-group"><label>First Name <span>*</span></label><input type="text" name="firstname" id="stu_fname" oninput="genStudentEmail()" required></div>
+          <div class="form-group"><label>Middle Initial</label><input type="text" name="middleinitial" maxlength="1"></div>
+          <div class="form-group"><label>Student Number <span>*</span></label><input type="text" name="studentnumber" id="stu_num" oninput="genStudentEmail()" required maxlength="9"></div>
+          
+          <div class="form-group"><label>UMak Email (Auto-generated)</label><input type="email" name="email" id="stu_email" readonly></div>
+          
+          <div class="form-group"><label>Gender <span>*</span></label><select name="gender" required><option value="Male">Male</option><option value="Female">Female</option></select></div>
+          
+          <div class="form-group"><label>College <span>*</span></label>
+            <select name="college" required>
+                <option value="">Select College</option>
+                <option value="CCIS">CCIS - College of Computing & Info Sciences</option>
+                <option value="CBFS">CBFS - College of Business & Financial Science</option>
+                <option value="CHK">CHK - College of Human Kinetics</option>
+                <option value="CLAS">CLAS - College of Liberal Arts & Sciences</option>
+                <option value="CITE">CITE - College of Innovative Teacher Education</option>
+                <option value="CITE-HSU">CITE-HSU - Higher School ng UMak</option>
+                <option value="CGPP">CGPP - College of Governance & Public Policy</option>
+                <option value="CCSE">CCSE - College of Construction Sciences</option>
+                <option value="CET">CET - College of Engineering & Technology</option>
+                <option value="CTHM">CTHM - College of Tourism & Hospitality</option>
+                <option value="CCAPS">CCAPS - Center for Continuing, Advanced and Professional Studies</option>
+                <option value="SOL">SOL - School of Law</option>
+                <option value="IAD">IAD - Institute of Art & Design</option>
+                <option value="IOA">IOA - Institute of Accountancy</option>
+                <option value="IOP">IOP - Institute of Pharmacy</option>
+                <option value="ION">ION - Institute of Nursing</option>
+                <option value="IIHS">IIHS - Institute of Imaging Health Sciences</option>
+                <option value="ITEST">ITEST - Institute of Technical Education and Skills Training</option>
+                <option value="ISDNB">ISDNB - Institute of Social Development and Nation Building</option>
+                <option value="IOPsy">IOPsy - Institute of Psychology</option>
+                <option value="ISW">ISW - Institute of Social Work</option>
+                <option value="IDEM">IDEM - Institute of Disaster and Emergency Management</option>
+            </select>
+          </div>
+          
+          <div class="form-group"><label>Course <span>*</span></label><input type="text" name="course" required></div>
+          <div class="form-group"><label>Year Level <span>*</span></label><select name="yearlevel" required><option value="1">1st Year</option><option value="2">2nd Year</option><option value="3">3rd Year</option><option value="4">4th Year</option></select></div>
+          <div class="form-group"><label>Section <span>*</span></label><input type="text" name="section" required></div>
+          <div class="form-group"><label>Contact Number <span>*</span></label><input type="text" name="contactnumber" required maxlength="11"></div>
+          <div class="form-group">
+              <label>Password <span>*</span></label>
+              <div class="password-wrapper">
+                  <input type="password" name="password" id="stu_password" required>
+                  <button type="button" class="password-toggle" onclick="togglePassword('stu_password')">👁️</button>
+              </div>
+              <small style="color: #666; font-size: 11px;">Min 8 chars, 1 uppercase, 1 number, 1 special char</small>
+          </div>
+        </form>
+        <div class="button-container">
+          <button class="btn-back" onclick="showSection('login')">Back</button>
+          <button class="btn-submit" onclick="initiateStudentSignup()">Verify & Register</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN & ORG SIGNUP SECTIONS -->
+  <section id="admin-signup">
+    <div class="main-container">
+      <h2>Admin Registration</h2>
+      <div class="form-container">
+        <div class="warning-text">
+            <strong>Notice:</strong> Admin accounts require approval from the Department Head or CSOA before you can log in.
+        </div>
+        <form id="adminForm">
+          <div class="form-group"><label>First Name</label><input type="text" name="firstname" id="adm_fname" oninput="genAdminEmail()" required></div>
+          <div class="form-group"><label>Last Name</label><input type="text" name="lastname" id="adm_lname" oninput="genAdminEmail()" required></div>
+          <div class="form-group"><label>Middle Initial</label><input type="text" name="middleinitial" maxlength="1"></div>
+          <div class="form-group"><label>Employee ID</label><input type="text" name="employee_number" required></div>
+          <div class="form-group"><label>Department</label>
+            <select name="department">
+                <option value="CSOA">CSOA - Center for Student Organizations and Activities</option>
+                <option value="UFMO">UFMO - University Facilities Management Office</option>
+                <option value="OHSO">OHSO - Office of Health Services Operations</option>
+                <option value="GSO">GSO - General Services Office</option>
+                <option value="CIT">CIT - Center for Information Technology</option>
+                <option value="SPMO">SPMO - Supply and Property Management Office</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Position</label><input type="text" name="position" required></div>
+          <div class="form-group"><label>Email</label><input type="email" name="email" id="adm_email" readonly></div>
+          <div class="form-group"><label>Gender</label><select name="gender"><option value="Male">Male</option><option value="Female">Female</option></select></div>
+          <div class="form-group"><label>Contact</label><input type="text" name="contact_number" required></div>
+          <div class="form-group">
+              <label>Password</label>
+              <div class="password-wrapper">
+                  <input type="password" name="password" id="adm_password" required>
+                  <button type="button" class="password-toggle" onclick="togglePassword('adm_password')">👁️</button>
+              </div>
+              <small style="color: #666; font-size: 11px;">Min 8 chars, 1 uppercase, 1 number, 1 special char</small>
+          </div>
+        </form>
+        <div class="button-container">
+            <button class="btn-back" onclick="showSection('login')">Back</button>
+            <button class="btn-submit" onclick="submitAdmin()">Create Account</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="organization-signup">
+    <div class="main-container">
+      <h2>Organization Registration</h2>
+      <div class="form-container">
+        <div class="warning-text">
+            <strong>Notice:</strong> Organization accounts require approval from CSOA before you can access the dashboard.
+        </div>
+        <form id="orgForm">
+          <div class="form-group"><label>College</label>
+            <select name="college" required>
+                <option value="">Select College</option>
+                <option value="CCIS">CCIS - College of Computing & Info Sciences</option>
+                <option value="CBFS">CBFS - College of Business & Financial Science</option>
+                <option value="CHK">CHK - College of Human Kinetics</option>
+                <option value="CLAS">CLAS - College of Liberal Arts & Sciences</option>
+                <option value="CITE">CITE - College of Innovative Teacher Education</option>
+                <option value="CITE-HSU">CITE-HSU - Higher School ng UMak</option>
+                <option value="CGPP">CGPP - College of Governance & Public Policy</option>
+                <option value="CCSE">CCSE - College of Construction Sciences</option>
+                <option value="CET">CET - College of Engineering & Technology</option>
+                <option value="CTHM">CTHM - College of Tourism & Hospitality</option>
+                <option value="CCAPS">CCAPS - Center for Continuing, Advanced and Professional Studies</option>
+                <option value="SOL">SOL - School of Law</option>
+                <option value="IAD">IAD - Institute of Art & Design</option>
+                <option value="IOA">IOA - Institute of Accountancy</option>
+                <option value="IOP">IOP - Institute of Pharmacy</option>
+                <option value="ION">ION - Institute of Nursing</option>
+                <option value="IIHS">IIHS - Institute of Imaging Health Sciences</option>
+                <option value="ITEST">ITEST - Institute of Technical Education and Skills Training</option>
+                <option value="ISDNB">ISDNB - Institute of Social Development and Nation Building</option>
+                <option value="IOPsy">IOPsy - Institute of Psychology</option>
+                <option value="ISW">ISW - Institute of Social Work</option>
+                <option value="IDEM">IDEM - Institute of Disaster and Emergency Management</option>
+                <option value="University-Wide">University-Wide Organization</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Org Name</label><input type="text" name="orgName" required></div>
+          <div class="form-group"><label>Email</label><input type="email" name="orgEmail" required></div>
+          <div class="form-group">
+              <label>Password</label>
+              <div class="password-wrapper">
+                  <input type="password" name="password" id="org_password" required>
+                  <button type="button" class="password-toggle" onclick="togglePassword('org_password')">👁️</button>
+              </div>
+              <small style="color: #666; font-size: 11px;">Min 8 chars, 1 uppercase, 1 number, 1 special char</small>
+          </div>
+          <div class="form-group full-width"><label>Description</label><textarea name="description"></textarea></div>
+        </form>
+        <div class="button-container">
+            <button class="btn-back" onclick="showSection('login')">Back</button>
+            <button class="btn-submit" onclick="submitOrg()">Register</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-col"><h4>About ECP</h4><p>Event Coordination Portal</p></div>
+    <div class="footer-col"><h4>Contact</h4><p>helpdesk@umak.edu.ph</p></div>
+  </footer>
+
+  <script>
+    const API_BASE = '../api';
+    let userType = 'student';
+
+    // Utility: Show Custom Alert
+    function showAlert(title, message) {
+        document.getElementById('alertTitle').textContent = title;
+        document.getElementById('alertMessage').textContent = message;
+        document.getElementById('customAlertModal').style.display = 'flex';
+    }
+
+    function closeAlert() {
+        document.getElementById('customAlertModal').style.display = 'none';
+    }
+    
+    // STRONG PASSWORD VALIDATION
+    function validatePassword(password) {
+        // At least 8 chars, 1 uppercase, 1 number, 1 special char
+        const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        return regex.test(password);
+    }
+
+    function togglePassword(id) {
+        const x = document.getElementById(id);
+        if (x) {
+            x.type = x.type === "password" ? "text" : "password";
+        }
+    }
+
+    window.addEventListener('pageshow', function(event) {
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = false;
+        btn.textContent = 'Log in';
+    });
+
+    document.querySelectorAll('.user-type-btn').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('.user-type-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            userType = this.dataset.type;
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            const placeholders = { 'student': 'Student Number', 'organization': 'Org Email', 'admin': 'Employee ID' };
+            document.getElementById('username').placeholder = placeholders[userType];
+        }
+    });
+
+    function showSection(id) {
+        document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    // --- SIGNUP LOGIC ---
+    function genStudentEmail() {
+        const f = document.getElementById('stu_fname').value.trim();
+        const l = document.getElementById('stu_lname').value.trim();
+        const num = document.getElementById('stu_num').value.trim();
+        
+        if(f && l && num) {
+            const email = `${f.charAt(0)}${l}.${num}@umak.edu.ph`.toLowerCase().replace(/\s+/g, '');
+            document.getElementById('stu_email').value = email;
+        }
+    }
+
+    async function initiateStudentSignup() {
+        const form = document.getElementById('studentForm');
+        const pass = document.getElementById('stu_password').value;
+
+        if(!form.checkValidity()) { showAlert('Notice', "Fill all required fields"); return; }
+        
+        if(!validatePassword(pass)) {
+            showAlert('Weak Password', "Password must be at least 8 characters long and include an uppercase letter, a number, and a special character.");
+            return;
+        }
+        
+        const email = document.getElementById('stu_email').value;
+        
+        try {
+            const res = await fetch(`${API_BASE}/send_otp.php`, {
+                method: 'POST', body: JSON.stringify({email}), headers:{'Content-Type':'application/json'}
+            });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('otpEmailDisplay').innerText = email;
+                document.getElementById('otpModal').style.display = 'flex';
+            } else {
+                showAlert('Error', data.message);
+            }
+        } catch(e) { showAlert('Error', "Connection error"); }
+    }
+
+    async function verifyAndRegister() {
+        const otp = document.getElementById('otpInput').value;
+        if(!otp) return;
+
+        const formData = new FormData(document.getElementById('studentForm'));
+        const data = Object.fromEntries(formData.entries());
+        data.otp = otp;
+
+        try {
+            const res = await fetch(`${API_BASE}/students.php`, {
+                method: 'POST', body: JSON.stringify(data), headers:{'Content-Type':'application/json'}
+            });
+            const json = await res.json();
+            
+            if(json.success) {
+                document.getElementById('otpModal').style.display = 'none';
+                document.getElementById('studentForm').reset();
+                showSection('login');
+                showAlert('Success', "Registration Verified & Successful!");
+            } else {
+                document.getElementById('otpMsg').innerText = json.message;
+                document.getElementById('otpMsg').style.color = 'red';
+            }
+        } catch(e) { showAlert('Error', "Error registering"); }
+    }
+
+    // --- FORGOT PASSWORD LOGIC ---
+    function openForgotModal() {
+        document.getElementById('forgotModal').style.display = 'flex';
+        document.getElementById('resetMsg').innerText = '';
+        document.getElementById('resetEmail').value = '';
+    }
+
+    async function sendResetCode() {
+        const email = document.getElementById('resetEmail').value;
+        const type = document.getElementById('resetUserType').value;
+        const btn = document.getElementById('btnReset');
+        const msg = document.getElementById('resetMsg');
+
+        if(!email) { msg.innerText = "Enter email"; return; }
+        
+        btn.disabled = true; btn.innerText = "Sending...";
+
+        try {
+            const res = await fetch(`${API_BASE}/forgot_password.php`, {
+                method: 'POST', body: JSON.stringify({email, user_type: type}), headers:{'Content-Type':'application/json'}
+            });
+            const data = await res.json();
+            
+            if(data.success) {
+                document.getElementById('forgotModal').style.display = 'none';
+                document.getElementById('resetConfirmModal').style.display = 'flex';
+            } else {
+                msg.innerText = data.message;
+                msg.style.color = 'red';
+            }
+        } catch(e) { msg.innerText = "Connection error"; }
+        
+        btn.disabled = false; btn.innerText = "Send Code";
+    }
+
+    async function submitNewPassword() {
+        const otp = document.getElementById('resetOtpInput').value;
+        const p1 = document.getElementById('newPass').value;
+        const p2 = document.getElementById('confirmNewPass').value;
+        const msg = document.getElementById('resetConfirmMsg');
+
+        if(!otp || !p1) { msg.innerText = "Fill all fields"; return; }
+        if(p1 !== p2) { msg.innerText = "Passwords do not match"; return; }
+        
+        if(!validatePassword(p1)) {
+             msg.innerText = "Password too weak (8+ chars, Upper, Number, Special)";
+             msg.style.color = 'red';
+             return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/reset_password.php`, {
+                method: 'POST', body: JSON.stringify({otp: otp, password: p1}), headers:{'Content-Type':'application/json'}
+            });
+            const data = await res.json();
+            
+            if(data.success) {
+                document.getElementById('resetConfirmModal').style.display = 'none';
+                showAlert('Success', "Password updated successfully!");
+                // Clear fields
+                document.getElementById('resetOtpInput').value = '';
+                document.getElementById('newPass').value = '';
+                document.getElementById('confirmNewPass').value = '';
+            } else {
+                msg.innerText = data.message;
+                msg.style.color = 'red';
+            }
+        } catch(e) { msg.innerText = "Connection error"; }
+    }
+
+    // --- LOGIN ---
+    async function login() {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+        const btn = document.getElementById('loginBtn');
+        
+        if(!u || !p) return;
+        
+        btn.disabled = true; btn.textContent = "Verifying...";
+        
+        try {
+            const res = await fetch(`${API_BASE}/login.php`, {
+                method: 'POST', body: JSON.stringify({username: u, password: p, user_type: userType}), headers:{'Content-Type':'application/json'}
+            });
+            const json = await res.json();
+            
+            if(json.success) {
+                localStorage.setItem('user_session', JSON.stringify(json.user));
+                if(userType === 'organization') {
+                    localStorage.setItem('orgId', json.user.org_id);
+                    localStorage.setItem('orgName', json.user.org_name);
+                    window.location.href = 'organization/org_dashboard.html';
+                } else if (userType === 'admin') {
+                    window.location.href = 'admin/admin_dashboard.html';
+                } else {
+                    window.location.href = 'student/student_dashboard.html';
+                }
+            } else {
+                // Use UI Alert instead of console/alert
+                showAlert('Login Failed', json.message);
+                btn.disabled = false; btn.textContent = "Log in";
+            }
+        } catch(e) {
+            btn.disabled = false; btn.textContent = "Log in";
+            showAlert('Error', "Connection Error");
+        }
+    }
+
+    function genAdminEmail() {
+        const f = document.getElementById('adm_fname').value.trim();
+        const l = document.getElementById('adm_lname').value.trim();
+        if(f && l) {
+            document.getElementById('adm_email').value = `${f}.${l}@umak.edu.ph`.toLowerCase().replace(/\s+/g, '');
+        }
+    }
+    
+    async function submitAdmin() { 
+        const pass = document.getElementById('adm_password').value;
+        if(!validatePassword(pass)) {
+            showAlert('Weak Password', "Password must be at least 8 characters long and include an uppercase letter, a number, and a special character.");
+            return;
+        }
+
+        const formData = new FormData(document.getElementById('adminForm'));
+        const data = Object.fromEntries(formData.entries());
+        try {
+            const res = await fetch(`${API_BASE}/admins.php`, {
+                method: 'POST', body: JSON.stringify(data), headers:{'Content-Type':'application/json'}
+            });
+            const json = await res.json();
+            if(json.success) {
+                showAlert('Success', json.message);
+                document.getElementById('adminForm').reset();
+                showSection('login');
+            } else {
+                showAlert('Error', json.message);
+            }
+        } catch(e) { showAlert('Error', "Connection Error"); }
+    }
+
+    async function submitOrg() { 
+        const pass = document.getElementById('org_password').value;
+        if(!validatePassword(pass)) {
+            showAlert('Weak Password', "Password must be at least 8 characters long and include an uppercase letter, a number, and a special character.");
+            return;
+        }
+
+        const formData = new FormData(document.getElementById('orgForm'));
+        const data = Object.fromEntries(formData.entries());
+        try {
+            const res = await fetch(`${API_BASE}/organizations.php`, {
+                method: 'POST', body: JSON.stringify(data), headers:{'Content-Type':'application/json'}
+            });
+            const json = await res.json();
+            if(json.success) {
+                 // Org account creation notice: Pending Approval
+                showAlert('Success', "Organization registered! Please wait for CSOA approval before logging in.");
+                document.getElementById('orgForm').reset();
+                showSection('login');
+            } else {
+                showAlert('Error', json.message);
+            }
+        } catch(e) { showAlert('Error', "Connection Error"); }
+    }
+  </script>
+</body>
+</html>

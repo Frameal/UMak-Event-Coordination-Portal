@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CSOA Evaluation Form</title>
+  <style>
+    body { background: #f4f5f7; font-family: 'Century Gothic', sans-serif; display: flex; justify-content: center; padding: 40px 20px; }
+    .form-wrapper { background: white; width: 100%; max-width: 800px; padding: 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    
+    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f36b00; padding-bottom: 20px; }
+    .header h2 { color: #022d6d; margin-bottom: 5px; }
+    .event-meta { color: #666; font-size: 14px; }
+    
+    .section { margin-bottom: 30px; }
+    .section h4 { background: #022d6d; color: white; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+    
+    .rating-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: #f9f9f9; border-radius: 4px; }
+    .rating-label { font-size: 14px; font-weight: bold; color: #333; width: 50%; }
+    
+    .radio-group { display: flex; gap: 15px; }
+    .radio-option { display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; }
+    .radio-option input { cursor: pointer; }
+    
+    textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; }
+    
+    .btn-submit { background: #28a745; color: white; border: none; padding: 15px 30px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 4px; width: 100%; transition: 0.2s; }
+    .btn-submit:hover { background: #218838; }
+    .btn-cancel { background: #6c757d; color: white; border: none; padding: 10px; width: 100%; margin-top: 10px; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="form-wrapper">
+    <div class="header">
+        <h2>ACTIVITY EVALUATION FORM</h2>
+        <p class="event-meta" id="eventMeta">Loading event details...</p>
+    </div>
+
+    <form id="evalForm">
+        <!-- Hidden Identifiers -->
+        <input type="hidden" id="registration_id" name="registration_id">
+        <input type="hidden" id="event_id" name="event_id">
+        <input type="hidden" id="student_id" name="student_id">
+
+        <p style="text-align:center; margin-bottom:20px; font-style:italic; font-size:13px;">
+            Please rate the following items: <strong>5 (Excellent)</strong> to <strong>1 (Poor)</strong>.
+        </p>
+
+        <!-- I. OBJECTIVES -->
+        <div class="section">
+            <h4>I. OBJECTIVES</h4>
+            <div id="container_obj"></div>
+        </div>
+
+        <!-- II. CONDUCT -->
+        <div class="section">
+            <h4>II. CONDUCT OF THE ACTIVITY</h4>
+            <div id="container_cond"></div>
+        </div>
+
+        <!-- III. RESOURCE PERSON -->
+        <div class="section">
+            <h4>III. RESOURCE PERSON/SPEAKER</h4>
+            <div id="container_res"></div>
+        </div>
+
+        <!-- IV. TECHNICAL -->
+        <div class="section">
+            <h4>IV. TECHNICAL</h4>
+            <div id="container_tech"></div>
+        </div>
+
+        <!-- V. COMMENTS -->
+        <div class="section">
+            <h4>V. COMMENTS AND SUGGESTIONS</h4>
+            <textarea name="comments" placeholder="Write your honest feedback here..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">SUBMIT EVALUATION</button>
+        <button type="button" class="btn-cancel" onclick="window.location.href='student_post_eval.html'">Cancel</button>
+    </form>
+</div>
+
+<script>
+    const API_BASE = '../../api';
+    const userSession = JSON.parse(localStorage.getItem('user_session'));
+    const eventData = JSON.parse(localStorage.getItem('evalEvent'));
+
+    if(!userSession || !eventData) {
+        alert("Session missing. Redirecting...");
+        window.location.href = "student_post_eval.html";
+    }
+
+    // Populate Hidden Fields
+    document.getElementById('eventMeta').innerText = `Event: ${eventData.event_name} | Date: ${new Date(eventData.event_date).toDateString()}`;
+    document.getElementById('registration_id').value = eventData.registration_id;
+    document.getElementById('event_id').value = eventData.event_id;
+    document.getElementById('student_id').value = userSession.user_id;
+
+    // Helper to render rating rows
+    function createRow(label, name) {
+        return `
+        <div class="rating-row">
+            <div class="rating-label">${label}</div>
+            <div class="radio-group">
+                <label class="radio-option"><input type="radio" name="${name}" value="5" required>5</label>
+                <label class="radio-option"><input type="radio" name="${name}" value="4">4</label>
+                <label class="radio-option"><input type="radio" name="${name}" value="3">3</label>
+                <label class="radio-option"><input type="radio" name="${name}" value="2">2</label>
+                <label class="radio-option"><input type="radio" name="${name}" value="1">1</label>
+            </div>
+        </div>`;
+    }
+
+    // Inject Fields
+    document.getElementById('container_obj').innerHTML = 
+        createRow('1. Clarity', 'obj_clarity') + 
+        createRow('2. Relevance', 'obj_relevance');
+
+    document.getElementById('container_cond').innerHTML = 
+        createRow('1. Organization and flow', 'cond_flow') + 
+        createRow('2. Assistance of facilitators', 'cond_facilitators') +
+        createRow('3. Activities during sessions', 'cond_activities');
+
+    document.getElementById('container_res').innerHTML = 
+        createRow('1. Mastery of the topic', 'res_mastery') + 
+        createRow('2. Skills in presentation', 'res_presentation') +
+        createRow('3. Ability to draw participation', 'res_participation');
+
+    document.getElementById('container_tech').innerHTML = 
+        createRow('1. Suitability of the venue', 'tech_venue') + 
+        createRow('2. Adherence to time/schedule', 'tech_schedule') +
+        createRow('3. Accommodation', 'tech_accommodation') +
+        createRow('4. Sounds/Visuals', 'tech_sounds');
+
+    // Handle Submit
+    document.getElementById('evalForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        const res = await fetch(`${API_BASE}/student_evaluations.php`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await res.json();
+        if(result.success) {
+            alert("Evaluation Submitted Successfully!");
+            window.location.href = "student_post_eval.html";
+        } else {
+            alert("Error: " + result.message);
+        }
+    });
+</script>
+</body>
+</html>

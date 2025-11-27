@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University of Makati - My Events</title>
+  <style>
+    /* GLOBAL */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic', sans-serif; }
+    body { background-color: #f4f5f7; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+
+    /* NAVIGATION BAR */
+    nav { background-color: #022d6d; color: white; display: flex; align-items: center; justify-content: space-between; padding: 10px 30px; height: 60px; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
+    .nav-left { display: flex; align-items: center; gap: 15px; }
+    nav img { height: 35px; margin-left: 10px; }
+    .nav-title { display: flex; flex-direction: column; line-height: 1.2; }
+    .nav-title .main-title { font-size: 16px; font-weight: bold; }
+    .nav-title .org-name { font-size: 12px; color: #f36b00; font-weight: normal; }
+
+    /* SIDEBAR */
+    .sidebar { position: fixed; top: 60px; left: 0; width: 220px; background-color: white; bottom: 0; border-right: 1px solid #ddd; padding-top: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+    .sidebar a { display: block; padding: 12px 20px; color: #022d6d; text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+    .sidebar a:hover, .sidebar a.active { background-color: #022d6d; color: white; border-radius: 4px; margin: 0 10px; }
+    .logout-btn { background-color: #f30000; color: white; border: none; width: 80%; padding: 10px; margin: 20px auto; border-radius: 3px; cursor: pointer; font-size: 14px; }
+    .logout-btn:hover { background-color: #d00000; }
+
+    /* MAIN CONTENT */
+    .main-content { margin-left: 230px; margin-top: 80px; padding: 30px; flex: 1; }
+
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .page-header h2 { color: #f36b00; font-weight: normal; font-size: 28px; }
+    .btn-create { background-color: #022d6d; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.3s; font-weight: bold; }
+    .btn-create:hover { background-color: #00328f; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+    /* FILTERS */
+    .filters { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; }
+    .filter-item { display: flex; flex-direction: column; gap: 5px; }
+    .filter-item label { font-size: 13px; color: #022d6d; font-weight: bold; }
+    .filter-item select, .filter-item input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 150px; }
+
+    /* EVENTS CONTAINER */
+    .events-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    
+    .event-card { background-color: white; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; display: flex; flex-direction: column; }
+    .event-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+    
+    .event-image { width: 100%; height: 180px; background-size: cover; background-position: center; background-color: #ddd; position: relative; }
+    .event-status-badge { position: absolute; top: 10px; right: 10px; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    
+    /* Status Colors */
+    .status-Draft { color: #6c757d; }
+    .status-Published { color: #007bff; }
+    .status-Registration.Open { color: #28a745; }
+    .status-Registration.Closed { color: #dc3545; }
+    .status-Ongoing { color: #ffc107; }
+    .status-Completed { color: #6c757d; }
+    .status-Cancelled { color: #dc3545; }
+
+    .event-content { padding: 20px; display: flex; flex-direction: column; flex: 1; }
+    .event-title { color: #022d6d; font-size: 18px; font-weight: bold; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .event-info { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; flex: 1; }
+    .event-info-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #666; }
+    .event-info-item strong { color: #022d6d; min-width: 60px; }
+    
+    .event-stats { display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid #e0e0e0; font-size: 13px; margin-top: auto; }
+    .stat-item { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .stat-label { color: #666; font-size: 11px; text-transform: uppercase; }
+    .stat-value { color: #022d6d; font-weight: bold; font-size: 16px; }
+
+    .event-actions { display: flex; gap: 8px; margin-top: 15px; }
+    .btn-action { flex: 1; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; transition: 0.3s; font-weight: bold; }
+    .btn-view { background-color: #022d6d; color: white; }
+    .btn-view:hover { background-color: #00328f; }
+    .btn-edit { background-color: #f36b00; color: white; }
+    .btn-edit:hover { background-color: #d45a00; }
+
+    .no-events { background-color: white; padding: 60px 20px; text-align: center; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); grid-column: 1 / -1; }
+    .no-events h3 { color: #022d6d; margin-bottom: 10px; font-size: 20px; }
+    .no-events p { color: #666; margin-bottom: 20px; }
+
+    /* CUSTOM ALERT STYLES */
+    .custom-alert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 2000; justify-content: center; align-items: center; }
+    .custom-alert-box { background: white; border-radius: 8px; width: 400px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); overflow: hidden; }
+    .custom-alert-header { background: #022d6d; color: white; padding: 15px; font-weight: bold; display: flex; gap: 10px; }
+    .custom-alert-body { padding: 20px; color: #333; }
+    .custom-alert-footer { padding: 15px 20px; text-align: right; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px; }
+    .btn-alert { background: #022d6d; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; }
+    .btn-alert-cancel { background: #ccc; color: #333; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+
+    /* FOOTER */
+    footer { background-color: #242424; color: #f36b00; display: flex; justify-content: space-around; align-items: flex-start; padding: 40px 80px; font-size: 16px; flex-wrap: wrap; margin-top: 40px; }
+    footer .footer-section { max-width: 400px; margin-left: 80px; }
+    footer h4 { color: #f36b00; margin-bottom: 10px; }
+    footer p, footer a { color: white; font-size: 14px; line-height: 1.6; text-decoration: none; }
+    footer a:hover { color: #f36b00; text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .main-content { margin-left: 0; padding: 20px; }
+      .sidebar { display: none; }
+      .events-container { grid-template-columns: 1fr; }
+      .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+      .filters { flex-direction: column; }
+      .filter-item, .filter-item input, .filter-item select { width: 100%; }
+    }
+    .nav-right .account-link { color: #ccc; font-size: 12px; text-decoration: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; transition: 0.3s; }
+    .nav-right .account-link:hover { color: white; border-color: white; }
+  </style>
+</head>
+
+<body>
+
+  <!-- CUSTOM ALERT -->
+  <div class="custom-alert-overlay" id="customAlertOverlay">
+    <div class="custom-alert-box">
+      <div class="custom-alert-header"><span id="alertIcon">ℹ️</span><span id="alertTitle">Message</span></div>
+      <div class="custom-alert-body" id="alertBody"></div>
+      <div class="custom-alert-footer" id="alertFooter"></div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <div class="nav-title">
+        <span class="main-title">University of Makati - ECP</span>
+        <span class="org-name" id="orgNameDisplay">Loading...</span>
+      </div>
+    </div>
+    <div class="nav-right">
+        <a href="org_account.html" class="account-link">⚙️ Settings</a>
+    </div>
+  </nav>
+
+
+  <div class="sidebar">
+    <div>
+      <a href="org_dashboard.html">Dashboard</a>
+      <a href="#" class="active">My Events</a>
+      <a href="org_create_event.html">Create Event</a>
+      <a href="org_scan_qr.html">Scan QR Code</a>
+      <a href="org_evaluations.html">Evaluations</a>
+      <a href="org_messages.html">Messages</a>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="main-content">
+    <div class="page-header">
+      <h2>My Events</h2>
+      <button class="btn-create" onclick="window.location.href='org_create_event.html'">Create New Event</button>
+    </div>
+
+    <div class="filters">
+      <div class="filter-item">
+        <label>Status</label>
+        <select id="filterStatus" onchange="filterEvents()">
+          <option value="all">All Status</option>
+          <option value="Draft">Draft</option>
+          <option value="Published">Published</option>
+          <option value="Registration Open">Registration Open</option>
+          <option value="Registration Closed">Registration Closed</option>
+          <option value="Ongoing">Ongoing</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label>Event Type</label>
+        <select id="filterType" onchange="filterEvents()">
+          <option value="all">All Types</option>
+          <option value="Academic">Academic</option>
+          <option value="Social">Social</option>
+          <option value="Sports">Sports</option>
+          <option value="Cultural">Cultural</option>
+          <option value="Workshop">Workshop</option>
+          <option value="Seminar">Seminar</option>
+          <option value="Competition">Competition</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label>Search</label>
+        <input type="text" id="searchEvent" placeholder="Search event name..." onkeyup="filterEvents()">
+      </div>
+    </div>
+
+    <div class="events-container" id="eventsContainer">
+        <p style="grid-column: 1/-1; text-align:center;">Loading events...</p>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-section">
+      <h4>About ECP</h4>
+      <p>The Event Coordination Portal serves as the central management system for events organized by the colleges of the University of Makati.</p>
+    </div>
+    <div class="footer-section">
+      <h4>Links</h4>
+      <a href="https://www.umak.edu.ph/" target="_blank">University of Makati</a>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = '../../api';
+    const orgId = localStorage.getItem('orgId');
+    const orgName = localStorage.getItem('orgName');
+
+    if (!orgId) window.location.href = '../login_signup.html';
+    document.getElementById('orgNameDisplay').textContent = orgName;
+
+    let allEvents = [];
+    let filteredEvents = [];
+
+    // --- ALERT UTILS ---
+    function customAlert(msg, type='info', callback) {
+        const overlay = document.getElementById('customAlertOverlay');
+        const title = document.getElementById('alertTitle');
+        const body = document.getElementById('alertBody');
+        const footer = document.getElementById('alertFooter');
+        const icon = document.getElementById('alertIcon');
+
+        body.textContent = msg;
+        overlay.style.display = 'flex';
+
+        if(type==='confirm') {
+            title.textContent = 'Confirm'; 
+            icon.textContent = '❓';
+            footer.innerHTML = `
+                <button class="btn-alert-cancel" id="btnCancel">Cancel</button>
+                <button class="btn-alert" id="btnOk">Confirm</button>
+            `;
+            document.getElementById('btnOk').onclick = () => { overlay.style.display='none'; if(callback) callback(true); };
+            document.getElementById('btnCancel').onclick = () => { overlay.style.display='none'; if(callback) callback(false); };
+        } else {
+            title.textContent = type==='error'?'Error':'Success'; 
+            icon.textContent = type==='error'?'❌':'✅';
+            footer.innerHTML = `<button class="btn-alert" onclick="document.getElementById('customAlertOverlay').style.display='none'">OK</button>`;
+        }
+    }
+
+    async function loadEvents() {
+        try {
+            const res = await fetch(`${API_BASE}/org_events.php?org_id=${orgId}`);
+            const data = await res.json();
+
+            if (data.success) {
+                allEvents = data.events;
+                filteredEvents = [...allEvents];
+                renderEvents();
+            } else {
+                document.getElementById('eventsContainer').innerHTML = `<p style="text-align:center; grid-column:1/-1; color:red;">${data.message}</p>`;
+            }
+        } catch (e) {
+            console.error(e);
+            document.getElementById('eventsContainer').innerHTML = '<p style="text-align:center; grid-column:1/-1; color:red;">Connection Error</p>';
+        }
+    }
+
+    function renderEvents() {
+        const container = document.getElementById('eventsContainer');
+        container.innerHTML = '';
+
+        if (filteredEvents.length === 0) {
+            container.innerHTML = `
+              <div class="no-events">
+                <h3>No Events Found</h3>
+                <p>You haven't created any events yet, or no events match your filters.</p>
+                <button class="btn-create" onclick="window.location.href='org_create_event.html'">Create Your First Event</button>
+              </div>
+            `;
+            return;
+        }
+
+        filteredEvents.forEach(event => {
+            const card = document.createElement('div');
+            card.className = 'event-card';
+            const bgStyle = event.banner_image ? `background-image: url('${event.banner_image}')` : 'background: linear-gradient(135deg, #022d6d 0%, #00509e 100%)';
+            const statusClass = `status-${event.status.replace(' ', '.')}`;
+
+            card.innerHTML = `
+                <div class="event-image" style="${bgStyle}">
+                    <div class="event-status-badge ${statusClass}">${event.status}</div>
+                </div>
+                <div class="event-content">
+                    <div class="event-title">${event.event_name}</div>
+                    <div class="event-info">
+                        <div class="event-info-item"><strong>Date:</strong> ${new Date(event.event_date).toDateString()}</div>
+                        <div class="event-info-item"><strong>Time:</strong> ${formatTime(event.start_time)} - ${formatTime(event.end_time)}</div>
+                        <div class="event-info-item"><strong>Venue:</strong> ${event.venue_name || 'TBD'}</div>
+                        <div class="event-info-item"><strong>Type:</strong> ${event.event_type}</div>
+                    </div>
+                    
+                    <div class="event-stats">
+                        <div class="stat-item"><span class="stat-label">Registered</span><span class="stat-value">${event.current_attendees || 0}</span></div>
+                        <div class="stat-item"><span class="stat-label">Capacity</span><span class="stat-value">${event.attendees_capacity}</span></div>
+                        <div class="stat-item"><span class="stat-label">Avail</span><span class="stat-value">${event.attendees_capacity - event.current_attendees}</span></div>
+                    </div>
+
+                    <div class="event-actions">
+                        <button class="btn-action btn-view" onclick="event.stopPropagation(); window.location.href='org_event_details.html?id=${event.event_id}'">View Details</button>
+                        <button class="btn-action btn-edit" onclick="event.stopPropagation(); window.location.href='org_edit_event.html?id=${event.event_id}'">Edit</button>
+                    </div>
+                </div>
+            `;
+            // Make card clickable too
+            card.onclick = () => window.location.href=`org_event_details.html?id=${event.event_id}`;
+            container.appendChild(card);
+        });
+    }
+
+    function filterEvents() {
+        const status = document.getElementById('filterStatus').value;
+        const type = document.getElementById('filterType').value;
+        const search = document.getElementById('searchEvent').value.toLowerCase();
+
+        filteredEvents = allEvents.filter(ev => {
+            const matchStatus = status === 'all' || ev.status === status;
+            const matchType = type === 'all' || ev.event_type === type;
+            const matchSearch = ev.event_name.toLowerCase().includes(search);
+            return matchStatus && matchType && matchSearch;
+        });
+        renderEvents();
+    }
+
+    function formatTime(timeString) {
+        if(!timeString) return '';
+        const [h, m] = timeString.split(':');
+        const hour = parseInt(h);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${m} ${ampm}`;
+    }
+
+    function logout() {
+        customAlert("Are you sure you want to logout?", 'confirm', (confirmed) => {
+            if(confirmed) {
+                localStorage.removeItem('orgName');
+                localStorage.removeItem('orgId');
+                window.location.href = '../login_signup.html';
+            }
+        });
+    }
+
+    loadEvents();
+  </script>
+</body>
+</html>

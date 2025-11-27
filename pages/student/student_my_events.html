@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University of Makati - My Events</title>
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* GLOBAL */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Century Gothic', sans-serif;
+    }
+
+    body {
+      background-color: #f4f5f7;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 30px;
+      height: 60px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    nav img {
+      height: 35px;
+      margin-left: 10px;
+    }
+
+    nav span {
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-right .account-link {
+      color: #ccc;
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      border-radius: 15px;
+      transition: 0.3s;
+    }
+
+    .nav-right .account-link:hover {
+      color: white;
+      border-color: white;
+    }
+
+    /* SIDEBAR */
+    .sidebar-container {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 200px;
+      background-color: white;
+      bottom: 0;
+      border-right: 1px solid #ddd;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      overflow-y: hidden;
+      z-index: 900;
+    }
+
+    .sidebar-link {
+      display: block;
+      padding: 12px 20px;
+      color: #022d6d;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link.active {
+      background-color: #022d6d;
+      color: white;
+      border-radius: 4px;
+      margin: 0 10px;
+    }
+
+    .btn-logout {
+      background-color: #f30000;
+      color: white;
+      border: none;
+      width: 80%;
+      padding: 10px;
+      margin: auto 10% 20px;
+      border-radius: 3px;
+      cursor: pointer;
+      align-self: center;
+      transition: background-color 0.3s;
+    }
+
+    .btn-logout:hover {
+      background-color: #d00000;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      margin-left: 210px;
+      margin-top: 80px; 
+      padding: 30px;
+      flex: 1;
+    }
+
+    h2 {
+      color: #f36b00;
+      font-weight: normal;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    /* FILTER TABS */
+    .filter-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-tab {
+      padding: 8px 20px;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #022d6d;
+      transition: all 0.3s;
+      font-weight: 600;
+    }
+
+    .filter-tab:hover {
+      background-color: #e3f2fd;
+      border-color: #022d6d;
+    }
+
+    .filter-tab.active {
+      background-color: #022d6d;
+      color: white;
+      border-color: #022d6d;
+    }
+
+    /* EVENT CARDS */
+    .events-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 25px;
+    }
+
+    .event-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      border: 1px solid #eee;
+    }
+
+    .event-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .event-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-bottom: 1px solid #eee;
+    }
+
+    .event-card-content {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .event-card-content h3 {
+      font-size: 18px;
+      color: #022d6d;
+      margin-bottom: 5px;
+      line-height: 1.4;
+    }
+
+    .event-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #555;
+    }
+    
+    .event-info i {
+        color: #f36b00;
+        width: 16px;
+        text-align: center;
+    }
+
+    .status-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .event-status {
+      font-size: 11px;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 12px;
+      text-transform: uppercase;
+    }
+
+    .event-status.upcoming { background-color: #e3f2fd; color: #1976d2; }
+    .event-status.ongoing { background-color: #fff3e0; color: #f57c00; }
+    .event-status.completed { background-color: #e8f5e9; color: #388e3c; }
+    .event-status.cancelled { background-color: #ffebee; color: #d32f2f; }
+
+    /* VIEW TICKET BUTTON */
+    .btn-ticket {
+        background-color: #022d6d;
+        color: white;
+        border: none;
+        padding: 12px;
+        width: 100%;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-ticket:hover {
+        background-color: #00328f;
+    }
+
+    /* NO EVENTS MESSAGE */
+    .no-events {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .no-events h3 {
+      color: #022d6d;
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+    }
+
+    /* --- CUSTOM ALERT MODAL --- */
+    .custom-alert-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(3px);
+    }
+
+    .custom-alert-overlay.show {
+      display: flex;
+    }
+
+    .custom-alert-box {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      width: 400px;
+      max-width: 90%;
+      overflow: hidden;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .custom-alert-header {
+      background: #022d6d;
+      color: white;
+      padding: 15px 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+    }
+
+    .custom-alert-body {
+      padding: 25px 20px;
+      color: #333;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .custom-alert-footer {
+      padding: 15px 20px;
+      text-align: right;
+      border-top: 1px solid #eee;
+      background: #f9f9f9;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-modal {
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+      transition: 0.2s;
+    }
+
+    .btn-modal-primary { background-color: #022d6d; color: white; }
+    .btn-modal-primary:hover { background-color: #00328f; }
+    
+    .btn-modal-secondary { background-color: #ddd; color: #333; }
+    .btn-modal-secondary:hover { background-color: #ccc; }
+
+    /* --- TICKET MODAL STYLES --- */
+    /* Reuse alert structure but custom content */
+    .ticket-content {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .ticket-event-name {
+        color: #022d6d;
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .ticket-meta {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 20px;
+        border-bottom: 2px dashed #ddd;
+        padding-bottom: 15px;
+    }
+
+    .qr-wrapper {
+        background: white;
+        padding: 15px;
+        display: inline-block;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    #qrCodeCanvas {
+        display: block;
+    }
+
+    .ticket-instruction {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 20px;
+    }
+
+    .btn-download {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.3s;
+        text-decoration: none;
+    }
+    .btn-download:hover { background-color: #218838; transform: translateY(-2px); }
+
+    /* FOOTER */
+    footer {
+      background-color: #242424;
+      color: #f36b00;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding: 40px 80px;
+      font-size: 16px;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+
+    footer .footer-section {
+      max-width: 400px;
+      margin-left: 80px;
+    }
+
+    footer h4 {
+      color: #f36b00;
+      margin-bottom: 10px;
+    }
+
+    footer p {
+      color: white;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    footer a {
+      color: white;
+      text-decoration: underline;
+      font-size: 14px;
+    }
+
+    footer a:hover {
+      color: #f36b00;
+    }
+
+    @media (max-width: 768px) {
+        .main-content { margin-left: 0; padding: 20px; margin-top: 60px; }
+        .sidebar-container { display: none; }
+        .events-container { grid-template-columns: 1fr; }
+        footer { padding: 30px 20px; flex-direction: column; text-align: center; }
+        .footer-section { margin-left: 0; margin-bottom: 20px; }
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- CUSTOM ALERT MODAL -->
+  <div class="custom-alert-overlay" id="customAlertOverlay">
+    <div class="custom-alert-box">
+      <div class="custom-alert-header">
+        <span id="alertIcon">ℹ️</span>
+        <span id="alertTitle">Message</span>
+      </div>
+      <div class="custom-alert-body" id="alertBody">
+        Alert message here
+      </div>
+      <div class="custom-alert-footer" id="alertFooter">
+        <button class="btn-modal btn-modal-primary" onclick="closeAlert()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKET DETAILS MODAL -->
+  <div class="custom-alert-overlay" id="ticketModal">
+      <div class="custom-alert-box" style="width: 400px;">
+          <div class="custom-alert-header" style="justify-content: space-between;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                  <span>🎟️</span><span>Event Ticket</span>
+              </div>
+              <span style="cursor:pointer;" onclick="closeTicketModal()">✖</span>
+          </div>
+          <div class="ticket-content">
+              <div id="ticketEventName" class="ticket-event-name">Event Name</div>
+              <div id="ticketMeta" class="ticket-meta">
+                  <div id="ticketDate">Date: --</div>
+                  <div id="ticketVenue">Venue: --</div>
+              </div>
+              
+              <div class="qr-wrapper" id="qrContainer">
+                  <!-- QR Code will be rendered here -->
+              </div>
+              
+              <div class="ticket-instruction">Scan this QR code at the venue entrance.</div>
+              
+              <a id="btnDownloadTicket" class="btn-download" href="#" download="EventTicket.png">
+                  <i class="fas fa-download"></i> Download Ticket
+              </a>
+          </div>
+      </div>
+  </div>
+
+  <!-- NAVIGATION BAR -->
+  <nav>
+    <div class="nav-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <span>University of Makati - ECP</span>
+    </div>
+    <div class="nav-right">
+      <a href="student_account.html" class="account-link">⚙️ Settings</a>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar-container">
+    <a href="student_dashboard.html" class="sidebar-link">Dashboard</a>
+    <a href="student_events.html" class="sidebar-link">Events</a>
+    <a href="student_venues.html" class="sidebar-link">Venues</a>
+    <a href="student_post_eval.html" class="sidebar-link">Post-Evaluation</a>
+    <a href="#" class="sidebar-link active">My Events</a>
+    <a href="student_messages.html" class="sidebar-link">Messages</a>
+    <button class="btn-logout" id="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <h2>My Registered Events</h2>
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all">All Events</button>
+      <button class="filter-tab" data-filter="upcoming">Upcoming</button>
+      <button class="filter-tab" data-filter="ongoing">Ongoing</button>
+      <button class="filter-tab" data-filter="completed">Completed</button>
+    </div>
+
+    <div class="events-container" id="eventsContainer">
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">
+          <i class="fas fa-spinner fa-spin"></i> Loading your events...
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-section">
+      <h4>About ECP</h4>
+      <p>
+        The Event Coordination Portal serves as the central management system for events
+        organized by the colleges of the University of Makati.
+      </p>
+    </div>
+    <div class="footer-section">
+      <h4>Links</h4>
+      <a href="https://www.umak.edu.ph/" target="_blank">University of Makati</a>
+    </div>
+  </footer>
+
+  <!-- QRCode Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script>
+    // API Configuration
+    const API_BASE = '../../api';
+    let currentStudentId = null;
+    let myEvents = [];
+    let currentFilter = 'all';
+
+    // Check Session
+    const session = localStorage.getItem('user_session');
+    if (!session) {
+      window.location.href = '../login_signup.html';
+    } else {
+      const user = JSON.parse(session);
+      if (user.user_type !== 'student') {
+        window.location.href = '../login_signup.html';
+      } else {
+        currentStudentId = user.user_id;
+      }
+    }
+
+    // --- CUSTOM ALERT LOGIC ---
+    function customAlert(msg, type='info', callback) {
+        const overlay = document.getElementById('customAlertOverlay');
+        const title = document.getElementById('alertTitle');
+        const body = document.getElementById('alertBody');
+        const footer = document.getElementById('alertFooter');
+        const icon = document.getElementById('alertIcon');
+
+        // Reset styling
+        title.textContent = 'Message';
+        icon.textContent = 'ℹ️';
+
+        if (type === 'confirm') {
+            title.textContent = 'Confirm Action';
+            icon.textContent = '❓';
+            footer.innerHTML = `
+                <button class="btn-modal btn-modal-secondary" onclick="closeAlert(false)">Cancel</button>
+                <button class="btn-modal btn-modal-primary" onclick="closeAlert(true)">Confirm</button>
+            `;
+            // Attach callback to window object temporarily to handle click
+            window.alertCallback = callback;
+        } else if (type === 'error') {
+            title.textContent = 'Error';
+            icon.textContent = '❌';
+            footer.innerHTML = `<button class="btn-modal btn-modal-primary" onclick="closeAlert()">OK</button>`;
+        } else {
+            title.textContent = 'Success';
+            icon.textContent = '✅';
+            footer.innerHTML = `<button class="btn-modal btn-modal-primary" onclick="closeAlert()">OK</button>`;
+        }
+
+        body.textContent = msg;
+        overlay.classList.add('show');
+    }
+
+    function closeAlert(result) {
+        document.getElementById('customAlertOverlay').classList.remove('show');
+        if (window.alertCallback) {
+            window.alertCallback(result);
+            delete window.alertCallback;
+        }
+    }
+
+    // --- EVENT DATA LOGIC ---
+
+    function getEventStatus(eventDate, startTime, endTime) {
+      const now = new Date();
+      // Parse times
+      const [sh, sm] = startTime.split(':');
+      const [eh, em] = endTime.split(':');
+      
+      const start = new Date(eventDate); start.setHours(sh, sm, 0);
+      const end = new Date(eventDate); end.setHours(eh, em, 0);
+      
+      // Allow slight buffer
+      if (now < start) return 'upcoming';
+      if (now >= start && now <= end) return 'ongoing';
+      return 'completed';
+    }
+
+    function formatTime(timeString) {
+      if(!timeString) return '';
+      const [h, m] = timeString.split(':');
+      const hour = parseInt(h);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${m} ${ampm}`;
+    }
+
+    function formatDate(dateString) {
+      return new Date(dateString).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    async function loadMyEvents() {
+      if (!currentStudentId) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/student_event.php?student_id=${currentStudentId}`);
+        const result = await res.json();
+
+        if (result.success) {
+          // Filter only registered events
+          myEvents = result.events
+            .filter(ev => ev.registration_status === 'Registered')
+            .map(ev => ({
+              ...ev,
+              computed_status: getEventStatus(ev.event_date, ev.start_time, ev.end_time)
+            }));
+          renderEvents(myEvents);
+        } else {
+            document.getElementById('eventsContainer').innerHTML = `<p style="text-align:center; grid-column:1/-1;">${result.message}</p>`;
+        }
+      } catch (e) { 
+          console.error(e);
+          customAlert("Failed to load events. Please check your connection.", 'error');
+      }
+    }
+
+    function renderEvents(events) {
+      const container = document.getElementById('eventsContainer');
+      container.innerHTML = '';
+
+      let filtered = events;
+      if (currentFilter !== 'all') {
+        filtered = events.filter(ev => ev.computed_status === currentFilter);
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="no-events">
+                <h3>No ${currentFilter === 'all' ? '' : currentFilter} events found</h3>
+                <p>Register for events in the "Events" tab!</p>
+            </div>`;
+        return;
+      }
+
+      filtered.forEach(ev => {
+        const card = document.createElement('div');
+        card.className = 'event-card';
+        const statusClass = ev.computed_status;
+        const bg = ev.banner_image || '../../images/EVENT1.jpg';
+
+        // Card Click opens Ticket Details
+        card.onclick = (e) => {
+            // Prevent if clicking button explicitly (though button logic handles stopPropagation usually)
+            if(!e.target.closest('.btn-ticket')) {
+                openTicketModal(ev);
+            }
+        };
+
+        card.innerHTML = `
+          <img src="${bg}" onerror="this.src='../../images/EVENT1.jpg'">
+          <div class="event-card-content">
+            <h3>${ev.event_name}</h3>
+            <div class="event-info"><i class="fas fa-calendar-alt"></i> ${formatDate(ev.event_date)}</div>
+            <div class="event-info"><i class="fas fa-clock"></i> ${formatTime(ev.start_time)} - ${formatTime(ev.end_time)}</div>
+            <div class="event-info"><i class="fas fa-map-marker-alt"></i> ${ev.venue_name}</div>
+            
+            <div class="status-container">
+                <span class="event-status ${statusClass}">${statusClass}</span>
+                <span style="font-size:12px; font-weight:bold; color:#022d6d;"><i class="fas fa-check-circle"></i> Registered</span>
+            </div>
+          </div>
+          <button class="btn-ticket" onclick="event.stopPropagation(); openTicketModal(this.dataset.event)" data-event='${JSON.stringify(ev).replace(/'/g, "&apos;")}'>
+              <i class="fas fa-qrcode"></i> View Ticket
+          </button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // --- TICKET MODAL & QR LOGIC ---
+
+    function openTicketModal(eventData) {
+        if (typeof eventData === 'string') {
+            eventData = JSON.parse(eventData);
+        }
+
+        const modal = document.getElementById('ticketModal');
+        const qrContainer = document.getElementById('qrContainer');
+        const downloadBtn = document.getElementById('btnDownloadTicket');
+
+        // Populate Info
+        document.getElementById('ticketEventName').textContent = eventData.event_name;
+        document.getElementById('ticketDate').textContent = `Date: ${formatDate(eventData.event_date)} | ${formatTime(eventData.start_time)}`;
+        document.getElementById('ticketVenue').textContent = `Venue: ${eventData.venue_name}`;
+
+        // Generate QR
+        qrContainer.innerHTML = ''; // Clear previous
+        
+        if (!eventData.qr_code) {
+            qrContainer.innerHTML = '<p style="color:red; font-size:12px;">QR Code not found. Please contact admin.</p>';
+            downloadBtn.style.display = 'none';
+        } else {
+            downloadBtn.style.display = 'inline-flex';
+            
+            // Generate QR Code
+            new QRCode(qrContainer, {
+                text: eventData.qr_code,
+                width: 200,
+                height: 200,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            // Setup Download Link (Wait for canvas to render)
+            setTimeout(() => {
+                const canvas = qrContainer.querySelector('canvas');
+                if (canvas) {
+                    const imgUrl = canvas.toDataURL("image/png");
+                    downloadBtn.href = imgUrl;
+                    downloadBtn.download = `Ticket_${eventData.event_name.replace(/\s+/g, '_')}.png`;
+                } else {
+                    // Fallback if library uses img tag directly
+                    const img = qrContainer.querySelector('img');
+                    if(img) {
+                        downloadBtn.href = img.src;
+                        downloadBtn.download = `Ticket_${eventData.event_name.replace(/\s+/g, '_')}.png`;
+                    }
+                }
+            }, 100);
+        }
+
+        modal.classList.add('show');
+    }
+
+    function closeTicketModal() {
+        document.getElementById('ticketModal').classList.remove('show');
+    }
+
+    // --- INITIALIZATION ---
+
+    // Filter Logic
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.filter;
+        renderEvents(myEvents);
+      });
+    });
+
+    // Logout
+    function logout() {
+        customAlert("Are you sure you want to logout?", 'confirm', (confirmed) => {
+            if(confirmed) {
+                localStorage.removeItem('user_session');
+                window.location.href = '../login_signup.html';
+            }
+        });
+    }
+
+    // Load Data
+    loadMyEvents();
+  </script>
+</body>
+</html>

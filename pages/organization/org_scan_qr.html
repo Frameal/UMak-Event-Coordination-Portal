@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University of Makati - Scan QR Code</title>
+  <style>
+    /* GLOBAL */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Century Gothic', sans-serif;
+    }
+
+    body {
+      background-color: #f4f5f7;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 30px;
+      height: 60px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    nav img {
+      height: 35px;
+      margin-left: 10px;
+    }
+
+    .nav-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-title .main-title {
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      font-weight: bold;
+    }
+
+    .nav-title .org-name {
+      font-size: 12px;
+      color: #f36b00;
+      font-weight: normal;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      top: 60px; 
+      left: 0;
+      width: 220px;
+      background-color: white;
+      bottom: 0;
+      border-right: 1px solid #ddd;
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 20px;
+      color: #022d6d;
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #022d6d;
+      color: white;
+      border-radius: 4px;
+      margin: 0 10px;
+    }
+
+    .logout-btn {
+      background-color: #f30000;
+      color: white;
+      border: none;
+      width: 80%;
+      padding: 10px;
+      margin: 20px auto;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .logout-btn:hover {
+      background-color: #d00000;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      margin-left: 230px;
+      margin-top: 80px; 
+      padding: 30px;
+      flex: 1;
+      max-width: 1200px;
+    }
+
+    .page-header {
+      margin-bottom: 30px;
+    }
+
+    .page-header h2 {
+      color: #f36b00;
+      font-weight: normal;
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* EVENT SELECTOR */
+    .event-selector {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .event-selector label {
+      display: block;
+      color: #022d6d;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .event-selector select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: 'Century Gothic', sans-serif;
+    }
+
+    /* SCANNER SECTION */
+    .scanner-section {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .scanner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    #qr-reader {
+      width: 100%;
+      max-width: 500px;
+      border: 3px solid #022d6d;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #000;
+    }
+
+    #qr-reader video {
+      width: 100%;
+      display: block;
+    }
+
+    .scanner-status {
+      text-align: center;
+      padding: 15px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .status-ready {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-scanning {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    .status-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .scanner-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+
+    .btn-start {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .btn-start:hover {
+      background-color: #218838;
+    }
+
+    .btn-start:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .btn-stop {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .btn-stop:hover {
+      background-color: #c82333;
+    }
+
+    .btn-stop:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* SCANNED RESULTS */
+    .results-section {
+      background-color: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: none;
+    }
+
+    .results-section h3 {
+      color: #022d6d;
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .student-card {
+      background: linear-gradient(135deg, #022d6d 0%, #00509e 100%);
+      color: white;
+      padding: 25px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .student-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .student-name {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .attendance-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      background-color: #28a745;
+    }
+
+    .student-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .detail-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    /* CUSTOM ALERT STYLES */
+    .custom-alert-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .custom-alert-overlay.show {
+      display: flex;
+    }
+
+    .custom-alert-box {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      width: 400px;
+      max-width: 90%;
+      overflow: hidden;
+    }
+
+    .custom-alert-header {
+      background-color: #022d6d;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .custom-alert-body {
+      padding: 20px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .custom-alert-footer {
+      padding: 15px 20px;
+      text-align: right;
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-alert {
+      background-color: #022d6d;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-alert-cancel {
+        background-color: #ccc;
+        color: #333;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    /* FOOTER */
+    footer {
+      background-color: #242424;
+      color: #f36b00;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding: 40px 80px;
+      font-size: 16px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+
+    footer .footer-section {
+      max-width: 400px;
+      margin-left: 80px;
+    }
+
+    footer h4 {
+      color: #f36b00;
+      margin-bottom: 10px;
+    }
+
+    footer p {
+      color: white;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    footer a {
+      color: white;
+      text-decoration: underline;
+      font-size: 14px;
+    }
+
+    footer a:hover {
+      color: #f36b00;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .student-details {
+        grid-template-columns: 1fr;
+      }
+    }
+    .nav-right .account-link { color: #ccc; font-size: 12px; text-decoration: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; transition: 0.3s; }
+    .nav-right .account-link:hover { color: white; border-color: white; }
+  </style>
+</head>
+
+<body>
+
+  <div class="custom-alert-overlay" id="customAlertOverlay">
+    <div class="custom-alert-box">
+      <div class="custom-alert-header">
+        <span id="alertIcon">ℹ️</span>
+        <span id="alertTitle">Message</span>
+      </div>
+      <div class="custom-alert-body" id="alertBody">
+        Alert message here
+      </div>
+      <div class="custom-alert-footer" id="alertFooter">
+        </div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <div class="nav-title">
+        <span class="main-title">University of Makati - ECP</span>
+        <span class="org-name" id="orgNameDisplay">Loading...</span>
+      </div>
+    </div>
+    <div class="nav-right">
+        <a href="org_account.html" class="account-link">⚙️ Settings</a>
+    </div>
+  </nav>
+
+  <div class="sidebar">
+    <div>
+      <a href="org_dashboard.html">
+        <span>Dashboard</span>
+      </a>
+      <a href="org_events.html">
+        <span>My Events</span>
+      </a>
+      <a href="org_create_event.html">
+        <span>Create Event</span>
+      </a>
+      <a href="org_scan_qr.html" class="active">
+        <span>Scan QR Code</span>
+      </a>
+      <a href="org_evaluations.html">
+        <span>Evaluations</span>
+      </a>
+      <a href="org_messages.html">
+        <span>Messages</span>
+      </a>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="main-content">
+    <div class="page-header">
+      <h2>Scan Attendance</h2>
+      <p>Select an event and scan student QR codes to mark attendance.</p>
+    </div>
+
+    <div class="event-selector">
+      <label>Select Event</label>
+      <select id="eventSelect" onchange="onEventSelect()">
+        <option value="">-- Loading Ongoing Events --</option>
+      </select>
+    </div>
+
+    <div class="scanner-section">
+      <div class="scanner-container">
+        <div id="qr-reader"></div>
+        
+        <div class="scanner-status status-ready" id="scannerStatus">
+          Select an ongoing event above to enable scanning.
+        </div>
+
+        <div class="scanner-controls">
+          <button class="btn btn-start" id="startBtn" onclick="startScanner()" disabled>Start Camera</button>
+          <button class="btn btn-stop" id="stopBtn" onclick="stopScanner()" disabled>Stop Camera</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-section" id="resultsSection">
+      <h3>Recently Scanned</h3>
+      <div id="scannedResults"></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-section">
+      <h4>About ECP</h4>
+      <p>
+        The Event Coordination Portal serves as the central management system for events
+        organized by the colleges of the University of Makati.
+      </p>
+    </div>
+    <div class="footer-section">
+      <h4>Links</h4>
+      <a href="https://www.umak.edu.ph/" target="_blank">University of Makati</a>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <script>
+    const API_BASE = '../../api';
+    const orgId = localStorage.getItem('orgId');
+    const orgName = localStorage.getItem('orgName');
+
+    if(!orgId) window.location.href = '../login_signup.html';
+    document.getElementById('orgNameDisplay').innerText = orgName;
+
+    let html5QrCode;
+    let isScanning = false;
+    let selectedEventId = "";
+
+    // --- ALERT UTILS ---
+    function customAlert(msg, type='info', callback) {
+        const overlay = document.getElementById('customAlertOverlay');
+        const title = document.getElementById('alertTitle');
+        const body = document.getElementById('alertBody');
+        const footer = document.getElementById('alertFooter');
+        const icon = document.getElementById('alertIcon');
+
+        body.textContent = msg;
+        overlay.classList.add('show');
+
+        if(type==='confirm') {
+            title.textContent = 'Confirm'; 
+            icon.textContent = '❓';
+            footer.innerHTML = `
+                <button class="btn-alert-cancel" id="btnCancel">Cancel</button>
+                <button class="btn-alert" id="btnOk">Confirm</button>
+            `;
+            document.getElementById('btnOk').onclick = () => { overlay.classList.remove('show'); if(callback) callback(true); };
+            document.getElementById('btnCancel').onclick = () => { overlay.classList.remove('show'); if(callback) callback(false); };
+        } else {
+            title.textContent = type==='error'?'Error':'Success'; 
+            icon.textContent = type==='error'?'❌':'✅';
+            footer.innerHTML = `<button class="btn-alert" onclick="document.getElementById('customAlertOverlay').classList.remove('show')">OK</button>`;
+        }
+    }
+
+    // --- LOAD EVENTS ---
+    async function loadEvents() {
+        try {
+            const res = await fetch(`${API_BASE}/org_events.php?org_id=${orgId}`);
+            const data = await res.json();
+            const sel = document.getElementById('eventSelect');
+            sel.innerHTML = '<option value="">-- Select Ongoing Event --</option>';
+            
+            if(data.success && data.events.length > 0) {
+                // Strict filter: ONLY show Ongoing events for attendance
+                const activeEvents = data.events.filter(e => e.status === 'Ongoing');
+                
+                if (activeEvents.length > 0) {
+                    activeEvents.forEach(e => {
+                        sel.innerHTML += `<option value="${e.event_id}">${e.event_name} (${new Date(e.event_date).toLocaleDateString()})</option>`;
+                    });
+                } else {
+                    sel.innerHTML = '<option value="">No ongoing events found.</option>';
+                }
+            } else {
+                sel.innerHTML = '<option value="">No events found.</option>';
+            }
+        } catch(e) { 
+            console.error(e); 
+            customAlert("Failed to load events. Check connection.", "error");
+        }
+    }
+
+    function onEventSelect() {
+        selectedEventId = document.getElementById('eventSelect').value;
+        const startBtn = document.getElementById('startBtn');
+        const status = document.getElementById('scannerStatus');
+
+        if(selectedEventId) {
+            startBtn.disabled = false;
+            status.textContent = "Ready to scan. Click 'Start Camera'.";
+            status.className = "scanner-status status-ready";
+        } else {
+            startBtn.disabled = true;
+            if(isScanning) stopScanner();
+            status.textContent = "Select an ongoing event to enable scanning.";
+            status.className = "scanner-status status-ready";
+        }
+    }
+
+    // --- SCANNER LOGIC ---
+    function startScanner() {
+        if(isScanning) return;
+        
+        // Request camera permissions first to ensure browser allows it
+        Html5Qrcode.getCameras().then(devices => {
+            if (devices && devices.length) {
+                html5QrCode = new Html5Qrcode("qr-reader");
+                html5QrCode.start(
+                    { facingMode: "environment" }, 
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    onScanSuccess,
+                    (err) => { /* Ignore frame errors to avoid console spam */ } 
+                ).then(() => {
+                    isScanning = true;
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('scannerStatus').textContent = "Scanning... Point camera at QR Code.";
+                    document.getElementById('scannerStatus').className = "scanner-status status-scanning";
+                }).catch(err => {
+                    customAlert("Camera Start Error: " + err, 'error');
+                });
+            } else {
+                 customAlert("No camera found on this device.", 'error');
+            }
+        }).catch(err => {
+             customAlert("Permission Denied: Please allow camera access.", 'error');
+        });
+    }
+
+    function stopScanner() {
+        if(!html5QrCode || !isScanning) return;
+        html5QrCode.stop().then(() => {
+            isScanning = false;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('scannerStatus').textContent = "Camera Stopped.";
+            document.getElementById('scannerStatus').className = "scanner-status status-ready";
+        }).catch(err => {
+            console.error("Failed to stop scanner", err);
+        });
+    }
+
+    async function onScanSuccess(decodedText) {
+        // Pause to prevent double scans of the same frame
+        html5QrCode.pause(); 
+
+        try {
+            const res = await fetch(`${API_BASE}/scan_qr.php`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    qr_code: decodedText,
+                    event_id: selectedEventId,
+                    org_id: orgId
+                })
+            });
+            const result = await res.json();
+
+            if(result.success) {
+                // Play beep sound for success feedback
+                const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3');
+                audio.play().catch(e => console.log("Audio play failed (user interaction needed first)"));
+                
+                addStudentCard(result.student);
+                document.getElementById('scannerStatus').textContent = `Success! ${result.student.firstname} Scanned.`;
+                document.getElementById('scannerStatus').className = "scanner-status status-success";
+            } else {
+                // Play error sound
+                const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-classic-short-alarm-993.mp3');
+                audio.play().catch(e => console.log("Audio play failed"));
+
+                document.getElementById('scannerStatus').textContent = result.message;
+                document.getElementById('scannerStatus').className = "scanner-status status-error";
+            }
+        } catch(e) {
+            console.error(e);
+            document.getElementById('scannerStatus').textContent = "Connection Error";
+            document.getElementById('scannerStatus').className = "scanner-status status-error";
+        }
+
+        // Resume scanning after 2.5 seconds
+        setTimeout(() => {
+            if(isScanning) {
+                html5QrCode.resume();
+                document.getElementById('scannerStatus').textContent = "Scanning...";
+                document.getElementById('scannerStatus').className = "scanner-status status-scanning";
+            }
+        }, 2500);
+    }
+
+    function addStudentCard(s) {
+        document.getElementById('resultsSection').style.display = 'block';
+        const container = document.getElementById('scannedResults');
+        const div = document.createElement('div');
+        div.className = 'student-card';
+        
+        // Format timestamp
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString();
+
+        div.innerHTML = `
+            <div class="student-header">
+                <div class="student-name">${s.lastname}, ${s.firstname}</div>
+                <div class="attendance-badge">PRESENT</div>
+            </div>
+            <div class="student-details">
+                <div class="detail-row"><span class="detail-label">Student #</span><span class="detail-value">${s.student_number}</span></div>
+                <div class="detail-row"><span class="detail-label">College</span><span class="detail-value">${s.college}</span></div>
+                <div class="detail-row"><span class="detail-label">Course</span><span class="detail-value">${s.course}</span></div>
+                <div class="detail-row"><span class="detail-label">Year/Sec</span><span class="detail-value">${s.year_level}-${s.section}</span></div>
+            </div>
+            <div style="margin-top:10px; font-size:11px; opacity:0.8; text-align:right;">Scanned at: ${timeStr}</div>
+        `;
+        container.prepend(div);
+        
+        // Limit displayed cards
+        if(container.children.length > 5) container.lastChild.remove();
+    }
+
+    function logout() {
+        if(isScanning) stopScanner();
+        customAlert("Are you sure you want to logout?", 'confirm', (c) => {
+            if(c) {
+                localStorage.removeItem('orgId');
+                localStorage.removeItem('orgName');
+                window.location.href = '../login_signup.html';
+            }
+        });
+    }
+
+    // Initialize
+    loadEvents();
+    
+    // Cleanup on window close
+    window.addEventListener('beforeunload', () => {
+        if (isScanning && html5QrCode) {
+            html5QrCode.stop();
+        }
+    });
+  </script>
+</body>
+</html>

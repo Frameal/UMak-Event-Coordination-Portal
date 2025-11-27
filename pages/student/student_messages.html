@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Messages</title>
+  <style>
+    /* ... (KEEP EXISTING STYLES) ... */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic', sans-serif; }
+    body { background-color: #f4f5f7; height: 100vh; display: flex; flex-direction: column; }
+    nav { background-color: #022d6d; color: white; display: flex; align-items: center; justify-content: space-between; padding: 10px 30px; height: 60px; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
+    .nav-left { display: flex; align-items: center; gap: 15px; }
+    nav img { height: 35px; margin-left: 10px; }
+    nav span { font-size: 16px; font-weight: bold; letter-spacing: 0.5px; }
+    .nav-right .account-link { color: #ccc; font-size: 12px; text-decoration: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; transition: 0.3s; }
+    .nav-right .account-link:hover { color: white; border-color: white; }
+    .sidebar-container { position: fixed; top: 60px; left: 0; width: 200px; background-color: white; bottom: 0; border-right: 1px solid #ddd; padding: 20px 0; display: flex; flex-direction: column; gap: 5px; }
+    .sidebar-link { display: block; padding: 12px 20px; color: #022d6d; text-decoration: none; font-size: 14px; position: relative; }
+    .sidebar-link:hover, .sidebar-link.active { background-color: #022d6d; color: white; border-radius: 4px; margin: 0 10px; }
+    .badge-dot { width: 10px; height: 10px; background-color: #dc3545; border-radius: 50%; position: absolute; right: 20px; top: 15px; display: none; border: 2px solid white; }
+    .sidebar-link.active .badge-dot { border-color: #022d6d; }
+    .btn-logout { background-color: #f30000; color: white; border: none; width: 80%; padding: 10px; margin: auto 10% 20px; border-radius: 3px; cursor: pointer; align-self: center; margin-top: auto; }
+    .main-content { margin-left: 200px; margin-top: 60px; flex: 1; display: flex; height: calc(100vh - 60px); overflow: hidden; }
+    .chat-list-panel { width: 320px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+    .chat-header-bar { padding: 20px; border-bottom: 1px solid #eee; font-weight: bold; color: #022d6d; display: flex; justify-content: space-between; align-items: center; }
+    .new-msg-btn { background: none; border: none; color: #f36b00; font-size: 24px; cursor: pointer; }
+    .contact-list { overflow-y: auto; flex: 1; }
+    .contact-item { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+    .contact-item:hover { background-color: #f9f9f9; }
+    .contact-item.active { background-color: #e3f2fd; border-left: 4px solid #022d6d; }
+    .contact-info { display: flex; flex-direction: column; }
+    .contact-name { font-weight: bold; color: #333; font-size: 14px; }
+    .contact-role { font-size: 11px; color: #888; text-transform: uppercase; }
+    .unread-badge { background-color: #dc3545; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; display: none; }
+    .chat-panel { flex: 1; display: flex; flex-direction: column; background: #f0f2f5; }
+    .message-header { padding: 10px 25px; background: white; border-bottom: 1px solid #ddd; height: 70px; display: flex; justify-content: space-between; align-items: center; }
+    .header-info h3 { font-size: 16px; color: #022d6d; margin-bottom: 2px; }
+    .header-subject { font-size: 13px; color: #666; font-weight: normal; display: block; }
+    .btn-delete-chat { background: none; border: none; color: #dc3545; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+    .messages-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .message-bubble { max-width: 70%; padding: 10px 15px; border-radius: 15px; font-size: 14px; line-height: 1.4; position: relative; word-wrap: break-word; }
+    .msg-sent { align-self: flex-end; background-color: #022d6d; color: white; border-bottom-right-radius: 2px; }
+    .msg-received { align-self: flex-start; background-color: white; color: #333; border-bottom-left-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .msg-subject-tag { font-size: 10px; font-weight: bold; display: block; margin-bottom: 3px; opacity: 0.8; text-transform: uppercase; }
+    .msg-time { font-size: 10px; display: block; text-align: right; margin-top: 5px; opacity: 0.7; }
+    .msg-attachment { margin-top: 5px; display: block; }
+    .attachment-img { max-width: 200px; max-height: 200px; border-radius: 8px; margin-bottom: 5px; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); display: block; background-color: #fff; }
+    .attachment-link { color: inherit; text-decoration: underline; font-size: 12px; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 4px; }
+    .input-area { padding: 15px 20px; background: white; border-top: 1px solid #ddd; display: flex; gap: 10px; align-items: center; }
+    .input-area input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+    .file-label { cursor: pointer; font-size: 24px; color: #666; padding: 0 5px; }
+    .btn-send { background: #f36b00; color: white; border: none; padding: 8px 25px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+    .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; justify-content: center; align-items: center; cursor: zoom-out; }
+    .lightbox img { max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); cursor: default; }
+    .lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; font-weight: bold; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 25px; border-radius: 8px; width: 450px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: bold; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-left">
+          <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+          <span>University of Makati - ECP</span>
+        </div>
+        <div class="nav-right">
+          <a href="student_account.html" class="account-link">⚙️ Settings</a>
+        </div>
+      </nav>
+
+  <div class="sidebar-container">
+    <a href="student_dashboard.html" class="sidebar-link">Dashboard</a>
+    <a href="student_events.html" class="sidebar-link">Events</a>
+    <a href="student_venues.html" class="sidebar-link">Venues</a>
+    <a href="student_post_eval.html" class="sidebar-link">Post-Evaluation</a>
+    <a href="student_my_events.html" class="sidebar-link">My Events</a>
+    <a href="#" class="sidebar-link active">
+        Messages
+        <span class="badge-dot" id="sidebarBadge"></span>
+    </a>
+    <button class="btn-logout" id="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="main-content">
+    <div class="chat-list-panel">
+        <div class="chat-header-bar">
+            <span>Inbox</span>
+            <button class="new-msg-btn" onclick="showModal()">+</button>
+        </div>
+        <div class="contact-list" id="contactList">Loading...</div>
+    </div>
+
+    <div class="chat-panel">
+        <div class="message-header" id="chatHeader">
+            <div class="header-info">
+                <h3 id="headerName">Select a conversation</h3>
+                <span class="header-subject" id="headerSubject"></span>
+            </div>
+            <button class="btn-delete-chat" id="btnDelete" style="display:none;" onclick="deleteConversation()">
+                🗑️ Delete Chat
+            </button>
+        </div>
+        <div class="messages-box" id="messageBox"></div>
+        
+        <div class="input-area" id="inputArea" style="display:none;">
+            <label for="fileInput" class="file-label" title="Attach File/Image">📎</label>
+            <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect()">
+            <input type="text" id="msgInput" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="btn-send" onclick="sendMessage()">Send</button>
+        </div>
+        <div id="filePreview" style="padding: 0 20px; font-size: 12px; color: #022d6d; display:none;"></div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+      <span class="lightbox-close">&times;</span>
+      <img id="lightboxImg" src="" onclick="event.stopPropagation()">
+  </div>
+
+  <div class="modal" id="newMsgModal">
+    <div class="modal-content">
+        <h3 style="color:#022d6d; margin-bottom:20px;">Compose Message</h3>
+        <div class="form-group">
+            <label>To:</label>
+            <select id="msgType" onchange="loadRecipients()">
+                <option value="">Select Type</option>
+                <option value="admin">Admin / CSOA</option>
+                <option value="organization">Organization</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Recipient:</label>
+            <select id="msgRecipient"><option>Select Type First...</option></select>
+        </div>
+        <div class="form-group">
+            <label>Subject:</label>
+            <input type="text" id="msgSubject" placeholder="e.g., Event Inquiry, Report Issue">
+        </div>
+        <div class="form-group">
+            <label>Message:</label>
+            <textarea id="msgBody" rows="4"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button onclick="document.getElementById('newMsgModal').style.display='none'" style="background:#ccc; border:none; padding:8px 15px; border-radius:4px;">Cancel</button>
+            <button onclick="startChat()" style="background:#022d6d; color:white; border:none; padding:8px 15px; border-radius:4px;">Send</button>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '../../api';
+    const session = JSON.parse(localStorage.getItem('user_session'));
+    let currentContact = null;
+    
+    if(!session) window.location.href = '../login_signup.html';
+
+    async function pollUpdates() {
+        const resCount = await fetch(`${API_BASE}/messages.php?action=unread_count&user_id=${session.user_id}&user_type=student`);
+        const dataCount = await resCount.json();
+        
+        if(dataCount.count > 0) document.getElementById('sidebarBadge').style.display = 'block';
+        else document.getElementById('sidebarBadge').style.display = 'none';
+
+        if(!currentContact) loadContacts();
+    }
+
+    async function loadContacts() {
+        const res = await fetch(`${API_BASE}/messages.php?user_id=${session.user_id}&user_type=student`);
+        const data = await res.json();
+        const list = document.getElementById('contactList');
+        
+        const currentId = currentContact ? currentContact.contact_id : null;
+        list.innerHTML = '';
+
+        if(!data.contacts || data.contacts.length === 0) {
+            list.innerHTML = '<div style="padding:20px; text-align:center; color:#888">No messages yet.<br>Click + to start a conversation.</div>';
+            return;
+        }
+
+        data.contacts.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'contact-item';
+            if(currentId == c.contact_id) div.classList.add('active');
+            
+            const badgeDisplay = c.unread_count > 0 ? 'inline-block' : 'none';
+            
+            div.innerHTML = `
+                <div class="contact-info">
+                    <span class="contact-name">${c.name}</span>
+                    <span class="contact-role">${c.sub || c.contact_type}</span>
+                </div>
+                <span class="unread-badge" style="display:${badgeDisplay}">${c.unread_count}</span>
+            `;
+            div.onclick = () => openChat(c, div);
+            list.appendChild(div);
+        });
+    }
+
+    async function openChat(contact, element) {
+        currentContact = contact;
+        document.querySelectorAll('.contact-item').forEach(e => e.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        document.getElementById('headerName').innerText = contact.name;
+        document.getElementById('btnDelete').style.display = 'flex';
+        document.getElementById('inputArea').style.display = 'flex';
+        
+        document.getElementById('msgInput').value = '';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('filePreview').style.display = 'none';
+
+        fetchMessages();
+    }
+
+    async function fetchMessages() {
+        if(!currentContact) return;
+        
+        const res = await fetch(`${API_BASE}/messages.php?user_id=${session.user_id}&user_type=student&contact_id=${currentContact.contact_id}&contact_type=${currentContact.contact_type}`);
+        const data = await res.json();
+        
+        const box = document.getElementById('messageBox');
+        box.innerHTML = '';
+        let lastSubject = '';
+
+        data.messages.forEach(msg => {
+            const isMe = msg.sender_type === 'student' && msg.sender_id == session.user_id;
+            const div = document.createElement('div');
+            div.className = `message-bubble ${isMe ? 'msg-sent' : 'msg-received'}`;
+            
+            let subjectHtml = '';
+            if(msg.subject && msg.subject !== lastSubject) {
+                subjectHtml = `<span class="msg-subject-tag">Subject: ${msg.subject}</span>`;
+                lastSubject = msg.subject;
+            }
+
+            let attachHtml = '';
+            if(msg.attachment_path) {
+                if(msg.attachment_type && ['jpg','jpeg','png','gif'].includes(msg.attachment_type)) {
+                    attachHtml = `<div class="msg-attachment">
+                        <img src="${msg.attachment_path}" class="attachment-img" onclick="openLightbox('${msg.attachment_path}')" alt="Image">
+                    </div>`;
+                } else {
+                    attachHtml = `<div class="msg-attachment">
+                        <a href="${msg.attachment_path}" target="_blank" class="attachment-link">📄 Download ${msg.attachment_name}</a>
+                    </div>`;
+                }
+            }
+
+            div.innerHTML = `${subjectHtml}${msg.message_body}${attachHtml}<span class="msg-time">${new Date(msg.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
+            box.appendChild(div);
+        });
+
+        document.getElementById('headerSubject').innerText = lastSubject ? `Subject: ${lastSubject}` : '';
+        box.scrollTop = box.scrollHeight;
+        
+        pollUpdates();
+    }
+
+    function openLightbox(src) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+    }
+
+    function handleFileSelect() {
+        const file = document.getElementById('fileInput').files[0];
+        const preview = document.getElementById('filePreview');
+        if(file) {
+            preview.innerText = `Selected: ${file.name}`;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('msgInput');
+        const fileInput = document.getElementById('fileInput');
+        
+        if(!input.value.trim() && !fileInput.files[0]) return;
+
+        const formData = new FormData();
+        formData.append('sender_type', 'student');
+        formData.append('sender_id', session.user_id);
+        formData.append('receiver_type', currentContact.contact_type);
+        formData.append('receiver_id', currentContact.contact_id);
+        formData.append('message_body', input.value);
+        
+        if(fileInput.files[0]) {
+            formData.append('attachment', fileInput.files[0]);
+        }
+
+        await fetch(`${API_BASE}/messages.php`, { method: 'POST', body: formData });
+
+        input.value = '';
+        fileInput.value = '';
+        document.getElementById('filePreview').style.display = 'none';
+        
+        fetchMessages();
+    }
+
+    async function deleteConversation() {
+        if(!confirm("Delete this conversation? It will be hidden from your view.")) return;
+        await fetch(`${API_BASE}/messages.php?user_id=${session.user_id}&user_type=student&contact_id=${currentContact.contact_id}&contact_type=${currentContact.contact_type}`, { method: 'DELETE' });
+        location.reload();
+    }
+
+    function showModal() { 
+        document.getElementById('newMsgModal').style.display = 'flex';
+        document.getElementById('msgType').value = "";
+        document.getElementById('msgRecipient').innerHTML = "<option>Select Type First...</option>";
+        document.getElementById('msgSubject').value = "";
+        document.getElementById('msgBody').value = "";
+    }
+
+    // --- FIX: FETCH RECIPIENTS DYNAMICALLY ---
+    async function loadRecipients() {
+        const type = document.getElementById('msgType').value;
+        const sel = document.getElementById('msgRecipient');
+        sel.innerHTML = '<option>Loading...</option>';
+        
+        if (!type) {
+            sel.innerHTML = '<option>Select Type First...</option>';
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/messages.php?action=get_recipients&type=${type}`);
+            const result = await res.json();
+            
+            sel.innerHTML = '';
+            if(result.success && result.data.length > 0) {
+                result.data.forEach(item => {
+                    sel.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                });
+            } else {
+                sel.innerHTML = '<option value="">No recipients found</option>';
+            }
+        } catch(e) {
+            console.error(e);
+            sel.innerHTML = '<option value="">Error fetching list</option>';
+        }
+    }
+
+    async function startChat() {
+        const type = document.getElementById('msgType').value;
+        const rec = document.getElementById('msgRecipient').value;
+        const sub = document.getElementById('msgSubject').value;
+        const body = document.getElementById('msgBody').value;
+
+        if(!rec || !body) { alert("Fill required fields"); return; }
+
+        const formData = new FormData();
+        formData.append('sender_type', 'student');
+        formData.append('sender_id', session.user_id);
+        formData.append('receiver_type', type);
+        formData.append('receiver_id', rec);
+        formData.append('subject', sub);
+        formData.append('message_body', body);
+        formData.append('category', 'General');
+
+        await fetch(`${API_BASE}/messages.php`, { method: 'POST', body: formData });
+        
+        document.getElementById('newMsgModal').style.display = 'none';
+        loadContacts();
+    }
+
+    function logout() {
+        if(confirm("Logout?")) {
+            localStorage.removeItem('user_session');
+            window.location.href = '../login_signup.html';
+        }
+    }
+
+    loadContacts();
+    setInterval(() => {
+        if(currentContact) fetchMessages();
+        pollUpdates();
+    }, 5000);
+  </script>
+</body>
+</html>

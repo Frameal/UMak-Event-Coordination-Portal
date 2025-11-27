@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Details - UMak ECP</title>
+  <style>
+    /* --- GLOBAL --- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Century Gothic', sans-serif;
+    }
+
+    body {
+      background-color: #f4f5f7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 40px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+      font-size: 16px;
+      font-weight: normal;
+    }
+
+    .navbar-left img {
+      height: 40px;
+    }
+
+    .navbar-links {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+
+    .navbar-links li a {
+      text-decoration: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 3px;
+      transition: 0.3s;
+    }
+
+    .navbar-links li a:hover,
+    .navbar-links li a.active-link {
+      background-color: #f36b00;
+      color: white;
+    }
+
+    /* NAV RIGHT - Settings & Logout */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-right .account-link {
+      color: #ccc;
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      border-radius: 15px;
+      transition: 0.3s;
+    }
+
+    .nav-right .account-link:hover {
+      color: white;
+      border-color: white;
+    }
+
+    .logout-btn {
+      background-color: #f30000;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 25px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    
+    /* --- MAIN --- */
+    main {
+      flex: 1;
+      padding: 40px 60px;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #022d6d;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    
+    /* --- DETAILS CARD --- */
+    .details-wrapper {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .event-banner {
+      width: 40%;
+      background-color: #ddd;
+      background-size: cover;
+      background-position: center;
+      min-height: 300px;
+    }
+
+    .event-info {
+      width: 60%;
+      padding: 30px;
+    }
+    
+    .event-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .event-title {
+      font-size: 28px;
+      color: #022d6d;
+      font-weight: bold;
+    }
+
+    .status-badge {
+      padding: 6px 15px;
+      border-radius: 20px;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    
+    /* Status Colors */
+    .status-Draft { background-color: #6c757d; }
+    .status-Published { background-color: #007bff; }
+    .status-Registration-Open { background-color: #28a745; } 
+    .status-Registration-Closed { background-color: #dc3545; } 
+    .status-Ongoing { background-color: #ffc107; color: #333; }
+    .status-Completed { background-color: #17a2b8; }
+    .status-Cancelled { background-color: #dc3545; }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .info-item label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .info-item span {
+      font-size: 16px;
+      color: #333;
+    }
+    
+    .description-box {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .description-box h3 {
+      color: #022d6d;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .description-box p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #444;
+      white-space: pre-line; 
+    }
+
+    /* --- ADMIN CONTROLS --- */
+    .admin-controls {
+      background-color: #f8f9fa;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      border-left: 5px solid #f36b00;
+    }
+
+    .admin-controls h3 {
+      margin-bottom: 15px;
+      color: #f36b00;
+      font-size: 16px;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .status-select {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .btn-save {
+      padding: 8px 20px;
+      background-color: #022d6d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-save:hover {
+      background-color: #00328f;
+    }
+
+    /* --- REGISTRATIONS SECTION --- */
+    .registrations-section {
+      margin-top: 40px;
+    }
+
+    .section-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-header h2 {
+      color: #022d6d;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    th {
+      background-color: #022d6d;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: bold;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    /* CUSTOM MODAL STYLES */
+    .custom-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .custom-modal-box {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        width: 400px;
+        max-width: 90%;
+        overflow: hidden;
+        animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .custom-modal-header {
+        background-color: #022d6d;
+        color: white;
+        padding: 15px 20px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .custom-modal-body {
+        padding: 25px 20px;
+        color: #333;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .custom-modal-footer {
+        padding: 15px 20px;
+        text-align: right;
+        border-top: 1px solid #eee;
+        background-color: #f9f9f9;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .btn-modal-confirm {
+        background-color: #022d6d;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .btn-modal-cancel {
+        background-color: #ccc;
+        color: #333;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .btn-modal-confirm:hover { background-color: #00328f; }
+    .btn-modal-cancel:hover { background-color: #bbb; }
+
+    /* --- FOOTER --- */
+    footer {
+      background-color: #242424;
+      color: #f36b00;
+      display: flex;
+      justify-content: space-around;
+      padding: 40px 20px;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+
+    .footer-column {
+      max-width: 400px;
+    }
+
+    .footer-column h4 {
+      margin-bottom: 10px;
+      color: #f36b00;
+    }
+
+    .footer-column p,
+    .footer-column a {
+      color: white;
+      font-size: 14px;
+      line-height: 1.6;
+      text-decoration: none;
+    }
+
+    .footer-column a:hover {
+      color: #f36b00;
+      text-decoration: underline;
+    }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 768px) {
+        .details-wrapper { flex-direction: column; }
+        .event-banner, .event-info { width: 100%; }
+        .event-banner { height: 200px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Alert Modal -->
+  <div class="custom-modal-overlay" id="alertModal">
+    <div class="custom-modal-box">
+        <div class="custom-modal-header">
+            <span id="alertTitle">Notification</span>
+        </div>
+        <div class="custom-modal-body" id="alertMessage"></div>
+        <div class="custom-modal-footer">
+            <button class="btn-modal-confirm" onclick="closeModal('alertModal')">OK</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Custom Confirm Modal -->
+  <div class="custom-modal-overlay" id="confirmModal">
+    <div class="custom-modal-box">
+        <div class="custom-modal-header">
+            <span id="confirmTitle">Confirm Action</span>
+        </div>
+        <div class="custom-modal-body">
+            <div id="confirmMessage"></div>
+        </div>
+        <div class="custom-modal-footer">
+            <button class="btn-modal-cancel" onclick="closeModal('confirmModal')">Cancel</button>
+            <button class="btn-modal-confirm" id="btnConfirmAction">Confirm</button>
+        </div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="navbar-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <span>University of Makati - ECP</span>
+    </div>
+
+    <ul class="navbar-links">
+      <li><a href="#" class="active-link">Dashboard</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_events.html">Events & Booking</a></li>
+      <li><a href="admin_venues.html">Venues</a></li>
+      <li><a href="admin_post_evaluations.html">Post-Evaluation</a></li>
+      <li><a href="admin_messages.html">Messages</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <a href="admin_account.html" class="account-link">⚙️ Settings</a>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <main>
+    <a href="admin_events.html" class="back-btn">← Back to Events List</a>
+
+    <div class="details-wrapper">
+      <div class="event-banner" id="eventBanner"></div>
+      <div class="event-info">
+        <div class="event-header">
+          <div class="event-title" id="eventTitle">Loading...</div>
+          <span class="status-badge" id="statusBadge">Loading</span>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <label>Date & Time</label>
+                <span id="dateTime"></span>
+            </div>
+            <div class="info-item">
+                <label>Venue</label>
+                <span id="venue"></span>
+            </div>
+            <div class="info-item">
+                <label>Organizer</label>
+                <span id="organizer"></span>
+            </div>
+            <div class="info-item">
+                <label>Type</label>
+                <span id="eventType"></span>
+            </div>
+            <div class="info-item">
+                <label>Capacity</label>
+                <span id="capacity"></span>
+            </div>
+            <div class="info-item">
+                <label>Prioritization</label>
+                <span id="priority"></span>
+            </div>
+        </div>
+
+        <div class="description-box">
+            <h3>Description</h3>
+            <p id="description"></p>
+        </div>
+
+        <div class="admin-controls">
+            <h3>Admin Actions</h3>
+            <div class="control-group">
+                <label>Change Event Status:</label>
+                <select id="statusSelect" class="status-select">
+                    <option value="Draft">Draft</option>
+                    <option value="Published">Published</option>
+                    <option value="Registration Open">Registration Open</option>
+                    <option value="Registration Closed">Registration Closed</option>
+                    <option value="Ongoing">Ongoing</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+                <button class="btn-save" onclick="updateStatus()">Update Status</button>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="registrations-section" id="registrations">
+        <div class="section-header">
+            <h2>Registered Students</h2>
+            <div style="font-size: 14px; color: #666;">Total: <span id="regCount">0</span></div>
+        </div>
+        <table id="tblRegistrations">
+            <thead>
+                <tr>
+                    <th>Student No.</th>
+                    <th>Name</th>
+                    <th>College</th>
+                    <th>Course/Year</th>
+                    <th>Date Registered</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="regBody">
+                <tr><td colspan="6" style="text-align:center;">Loading registrations...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="footer-column">
+      <h4>About ECP</h4>
+      <p>The Event Coordination Portal serves as the central management system for events...</p>
+    </div>
+    <div class="footer-column">
+      <h4>Links</h4>
+      <a href="https://www.umak.edu.ph/" target="_blank">University of Makati</a>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = '../../api';
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get('id');
+    let currentEventData = null;
+
+    // Modal Helpers
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    function showCustomAlert(message, title = "Notification") {
+        document.getElementById('alertTitle').textContent = title;
+        document.getElementById('alertMessage').textContent = message;
+        openModal('alertModal');
+    }
+
+    function showCustomConfirm(message, callback) {
+        document.getElementById('confirmTitle').textContent = "Confirm Action";
+        document.getElementById('confirmMessage').textContent = message;
+        
+        const confirmBtn = document.getElementById('btnConfirmAction');
+        const newBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+        
+        newBtn.onclick = function() {
+            closeModal('confirmModal');
+            callback(true);
+        };
+
+        openModal('confirmModal');
+    }
+
+    async function loadEventDetails() {
+        if (!eventId) {
+            showCustomAlert("No event ID specified.", "Error");
+            setTimeout(() => window.location.href = 'admin_events.html', 1500);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/admin_events.php?id=${eventId}`);
+            const result = await response.json();
+
+            if (result.success) {
+                currentEventData = result.data;
+                renderDetails(result.data);
+                renderRegistrations(result.data.registrations);
+            } else {
+                showCustomAlert(result.message, "Error");
+                setTimeout(() => window.location.href = 'admin_events.html', 1500);
+            }
+        } catch (error) {
+            console.error(error);
+            showCustomAlert("Error loading event details.", "Error");
+        }
+    }
+
+    function renderDetails(data) {
+        document.getElementById('eventTitle').textContent = data.event_name;
+        
+        // Banner
+        const bannerEl = document.getElementById('eventBanner');
+        if (data.banner_image) {
+            bannerEl.style.backgroundImage = `url('${data.banner_image}')`;
+        } else {
+            bannerEl.style.backgroundColor = '#022d6d'; // Default color
+        }
+
+        // Status Badge & Dropdown
+        const badge = document.getElementById('statusBadge');
+        badge.textContent = data.status;
+        const statusClass = data.status.replace(/ /g, '-');
+        badge.className = `status-badge status-${statusClass}`;
+        
+        document.getElementById('statusSelect').value = data.status;
+
+        // Info
+        document.getElementById('dateTime').textContent = `${data.event_date} | ${data.start_time} - ${data.end_time}`;
+        document.getElementById('venue').textContent = data.venue_name || 'TBD';
+        document.getElementById('organizer').textContent = data.org_name || 'Admin / University-Wide';
+        document.getElementById('eventType').textContent = data.event_type;
+        document.getElementById('priority').textContent = data.event_prioritization;
+        document.getElementById('capacity').textContent = `${data.current_attendees} / ${data.attendees_capacity}`;
+        document.getElementById('description').textContent = data.description || 'No description provided.';
+    }
+
+    function renderRegistrations(regs) {
+        const tbody = document.getElementById('regBody');
+        tbody.innerHTML = '';
+        
+        if (!regs) {
+             document.getElementById('regCount').textContent = 0;
+             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No students registered yet.</td></tr>';
+             return;
+        }
+
+        document.getElementById('regCount').textContent = regs.length;
+
+        if (regs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No students registered yet.</td></tr>';
+            return;
+        }
+
+        regs.forEach(r => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${r.student_number}</td>
+                <td>${r.lastname}, ${r.firstname}</td>
+                <td>${r.college}</td>
+                <td>${r.course} - ${r.year_level}${r.section}</td>
+                <td>${new Date(r.registration_date).toLocaleDateString()}</td>
+                <td>${r.status}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    async function updateStatus() {
+        const newStatus = document.getElementById('statusSelect').value;
+        
+        showCustomConfirm(`Change status to "${newStatus}"?`, async (confirmed) => {
+            if (confirmed) {
+                try {
+                    const response = await fetch(`${API_BASE}/admin_events.php`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            event_id: eventId,
+                            status: newStatus
+                        })
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showCustomAlert("Status updated!", "Success");
+                        loadEventDetails(); // Reload to refresh UI
+                    } else {
+                        showCustomAlert("Failed: " + result.message, "Error");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showCustomAlert("Connection error.", "Error");
+                }
+            }
+        });
+    }
+
+    function logout() {
+        showCustomConfirm("Are you sure you want to logout?", (confirmed) => {
+            if (confirmed) {
+                localStorage.removeItem('user_session');
+                window.location.href = "../login_signup.html";
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadEventDetails);
+  </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University of Makati - Post Evaluation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic'; }
+    body { background-color: #f4f5f7; display: flex; flex-direction: column; min-height: 100vh; }
+    nav { background-color: #022d6d; color: white; padding: 10px 30px; height: 60px; display: flex; align-items: center; position: fixed; top: 0; width: 100%; z-index: 1000; }
+    nav img { height: 35px; margin-right: 15px; }
+    .sidebar { position: fixed; top: 60px; left: 0; width: 200px; background: white; bottom: 0; border-right: 1px solid #ddd; padding: 20px 0; display: flex; flex-direction: column; gap: 5px; }
+    .sidebar a { display: block; padding: 12px 20px; color: #022d6d; text-decoration: none; font-size: 14px; }
+    .sidebar a:hover, .sidebar a.active { background-color: #022d6d; color: white; border-radius: 4px; margin: 0 10px; }
+    .btn-logout { background: #f30000; color: white; border: none; width: 80%; padding: 10px; margin: auto 10% 20px; border-radius: 3px; cursor: pointer; }
+    
+    .main-content { margin-left: 210px; margin-top: 80px; padding: 20px 40px; flex: 1; }
+    .eval-container { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 40px; }
+    .eval-card { background: white; border-radius: 8px; width: 300px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s; }
+    .eval-card.pending { cursor: pointer; border-left: 5px solid #dc3545; }
+    .eval-card.pending:hover { transform: translateY(-5px); }
+    .eval-card.completed { border-left: 5px solid #28a745; opacity: 0.8; }
+    .eval-card img { width: 100%; height: 150px; object-fit: cover; }
+    .eval-details { padding: 15px; }
+    .status-badge { font-size: 12px; font-weight: bold; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+    .badge-pending { background: #dc3545; color: white; }
+    .badge-completed { background: #28a745; color: white; }
+    
+    footer { background: #242424; color: #f36b00; display: flex; justify-content: space-around; padding: 40px 80px; margin-top: auto; }
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 30px;
+      height: 60px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    nav img {
+      height: 35px;
+      margin-left: 10px;
+    }
+
+    nav span {
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-right .account-link {
+      color: #ccc;
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      border-radius: 15px;
+      transition: 0.3s;
+    }
+
+    .nav-right .account-link:hover {
+      color: white;
+      border-color: white;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <span>University of Makati - ECP</span>
+    </div>
+    <div class="nav-right">
+      <a href="student_account.html" class="account-link">⚙️ Settings</a>
+    </div>
+  </nav>
+
+  <div class="sidebar">
+    <a href="student_dashboard.html">Dashboard</a>
+    <a href="student_events.html">Events</a>
+    <a href="student_venues.html">Venues</a>
+    <a href="student_post_eval.html" class="active">Post-Evaluation</a>
+    <a href="student_my_events.html">My Events</a>
+    <a href="student_messages.html" class="sidebar-link">Messages</a>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="main-content">
+    <h2 style="color:#f36b00; margin-bottom:20px;">Post-Evaluation</h2>
+    
+    <h3 style="color:#022d6d; border-bottom:2px solid #ccc; padding-bottom:5px; margin-bottom:15px;">Pending Evaluations (Action Required)</h3>
+    <div class="eval-container" id="pendingContainer">Loading...</div>
+
+    <h3 style="color:#022d6d; border-bottom:2px solid #ccc; padding-bottom:5px; margin-bottom:15px;">Completed Evaluations</h3>
+    <div class="eval-container" id="completedContainer">Loading...</div>
+  </div>
+
+  <footer>
+    <div class="footer-section">
+        <h4>About ECP</h4>
+        <p style="color:white; font-size:14px;">The Event Coordination Portal serves as the central management system.</p>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = '../../api';
+    const userSession = JSON.parse(localStorage.getItem('user_session'));
+
+    async function loadEvaluations() {
+        if(!userSession) window.location.href = "../login_signup.html";
+
+        const res = await fetch(`${API_BASE}/student_evaluations.php?student_id=${userSession.user_id}`);
+        const data = await res.json();
+
+        renderCards(data.pending, 'pendingContainer', true);
+        renderCards(data.completed, 'completedContainer', false);
+    }
+
+    function renderCards(list, containerId, isPending) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+
+        if(list.length === 0) {
+            container.innerHTML = '<p style="color:#666; padding:10px; font-style:italic;">No evaluations found.</p>';
+            return;
+        }
+
+        list.forEach(item => {
+            const img = item.banner_image || '../../images/EVENT1.jpg';
+            const div = document.createElement('div');
+            div.className = `eval-card ${isPending ? 'pending' : 'completed'}`;
+            
+            if(isPending) {
+                div.onclick = () => {
+                    localStorage.setItem('evalEvent', JSON.stringify(item));
+                    window.location.href = 'student_evaluation_form.html';
+                };
+            }
+
+            div.innerHTML = `
+                <img src="${img}" onerror="this.src='../../images/EVENT1.jpg'">
+                <div class="eval-details">
+                    <h4 style="color:#022d6d;">${item.event_name}</h4>
+                    <p style="font-size:12px; color:#666; margin:5px 0;">${new Date(item.event_date).toDateString()}</p>
+                    <span class="status-badge ${isPending ? 'badge-pending' : 'badge-completed'}">
+                        ${isPending ? 'Not Answered ⚠️' : 'Answered ✅'}
+                    </span>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function logout() {
+        if(confirm("Logout?")) window.location.href = "../login_signup.html";
+    }
+
+    loadEvaluations();
+  </script>
+</body>
+</html>

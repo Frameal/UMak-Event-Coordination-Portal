@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Organization Messages</title>
+  <style>
+    /* ... (Same as your provided CSS) ... */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic', sans-serif; }
+    body { background-color: #f4f5f7; height: 100vh; display: flex; flex-direction: column; }
+    nav { background-color: #022d6d; color: white; display: flex; align-items: center; justify-content: space-between; padding: 10px 30px; height: 60px; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
+    .nav-left { display: flex; align-items: center; gap: 15px; }
+    nav img { height: 35px; margin-left: 10px; }
+    .nav-title { display: flex; flex-direction: column; line-height: 1.2; }
+    .nav-title .main-title { font-size: 16px; font-weight: bold; }
+    .nav-title .org-name { font-size: 12px; color: #f36b00; font-weight: normal; }
+    .sidebar { position: fixed; top: 60px; left: 0; width: 220px; background-color: white; bottom: 0; border-right: 1px solid #ddd; padding-top: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+    .sidebar a { display: block; padding: 12px 20px; color: #022d6d; text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 10px; position: relative; }
+    .sidebar a:hover, .sidebar a.active { background-color: #022d6d; color: white; border-radius: 4px; margin: 0 10px; }
+    .badge-dot { width: 10px; height: 10px; background-color: #dc3545; border-radius: 50%; position: absolute; right: 20px; top: 15px; display: none; border: 2px solid white; }
+    .sidebar a.active .badge-dot { border-color: #022d6d; }
+    .logout-btn { background-color: #f30000; color: white; border: none; width: 80%; padding: 10px; margin: 20px auto; border-radius: 3px; cursor: pointer; font-size: 14px; }
+    .logout-btn:hover { background-color: #d00000; }
+    .main-content { margin-left: 220px; margin-top: 60px; flex: 1; display: flex; height: calc(100vh - 60px); overflow: hidden; }
+    .chat-list-panel { width: 300px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+    .chat-header { padding: 20px; border-bottom: 1px solid #eee; font-weight: bold; color: #022d6d; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .new-msg-btn { background: none; border: none; color: #f36b00; font-size: 24px; cursor: pointer; font-weight: bold; }
+    .contact-list { overflow-y: auto; flex: 1; }
+    .contact-item { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+    .contact-item:hover { background-color: #f9f9f9; }
+    .contact-item.active { background-color: #e3f2fd; border-left: 4px solid #022d6d; }
+    .contact-info { display: flex; flex-direction: column; }
+    .contact-name { font-weight: bold; color: #333; font-size: 14px; display: block; }
+    .contact-role { font-size: 11px; color: #888; text-transform: uppercase; }
+    .unread-badge { background-color: #dc3545; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; display: none; }
+    .chat-panel { flex: 1; display: flex; flex-direction: column; background: #f0f2f5; }
+    .message-header { padding: 15px 25px; background: white; border-bottom: 1px solid #ddd; font-weight: bold; color: #022d6d; font-size: 16px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .messages-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .message-bubble { max-width: 70%; padding: 10px 15px; border-radius: 15px; font-size: 14px; line-height: 1.4; position: relative; word-wrap: break-word; }
+    .msg-sent { align-self: flex-end; background-color: #022d6d; color: white; border-bottom-right-radius: 2px; }
+    .msg-received { align-self: flex-start; background-color: white; color: #333; border-bottom-left-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .msg-attachment { margin-top: 5px; display: block; }
+    .attachment-img { max-width: 200px; max-height: 200px; border-radius: 8px; margin-bottom: 5px; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); display: block; background-color: #fff; }
+    .attachment-link { color: inherit; text-decoration: underline; font-size: 12px; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 4px; }
+    .input-area { padding: 15px 20px; background: white; border-top: 1px solid #ddd; display: flex; gap: 10px; align-items: center; }
+    .input-area input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+    .file-label { cursor: pointer; font-size: 24px; color: #666; padding: 0 5px; }
+    .btn-send { background: #f36b00; color: white; border: none; padding: 8px 25px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+    .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; justify-content: center; align-items: center; cursor: zoom-out; }
+    .lightbox img { max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); cursor: default; }
+    .lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; font-weight: bold; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 25px; border-radius: 8px; width: 450px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: bold; color: #022d6d; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .custom-alert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 3000; justify-content: center; align-items: center; }
+    .custom-alert-box { background: white; border-radius: 8px; width: 400px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); overflow: hidden; }
+    .custom-alert-header { background: #022d6d; color: white; padding: 15px; font-weight: bold; display: flex; gap: 10px; align-items: center; }
+    .custom-alert-body { padding: 25px 20px; color: #333; line-height: 1.5; }
+    .custom-alert-footer { padding: 15px 20px; text-align: right; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; gap: 10px; }
+    .btn-alert { background: #022d6d; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; }
+    .btn-alert:hover { background: #00328f; }
+    .btn-alert-cancel { background: #ccc; color: #333; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; }
+    .btn-alert-cancel:hover { background: #bbb; }
+    .nav-right .account-link { color: #ccc; font-size: 12px; text-decoration: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; transition: 0.3s; }
+    .nav-right .account-link:hover { color: white; border-color: white; }
+  </style>
+</head>
+<body>
+
+  <div class="custom-alert-overlay" id="customAlertOverlay">
+    <div class="custom-alert-box">
+      <div class="custom-alert-header">
+        <span id="alertTitle">Notification</span>
+      </div>
+      <div class="custom-alert-body" id="alertBody"></div>
+      <div class="custom-alert-footer" id="alertFooter"></div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <div class="nav-title">
+        <span class="main-title">University of Makati - ECP</span>
+        <span class="org-name" id="orgNameDisplay">Loading...</span>
+      </div>
+    </div>
+    <div class="nav-right">
+        <a href="org_account.html" class="account-link">⚙️ Settings</a>
+    </div>
+  </nav>
+
+
+  <div class="sidebar">
+    <div>
+      <a href="org_dashboard.html"><span>Dashboard</span></a>
+      <a href="org_events.html"><span>My Events</span></a>
+      <a href="org_create_event.html"><span>Create Event</span></a>
+      <a href="org_scan_qr.html"><span>Scan QR Code</span></a>
+      <a href="org_evaluations.html"><span>Evaluations</span></a>
+      <a href="#" class="active">
+          <span>Messages</span>
+          <span class="badge-dot" id="sidebarBadge"></span>
+      </a>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="main-content">
+    <div class="chat-list-panel">
+        <div class="chat-header">
+            <span>Inbox</span>
+            <button class="new-msg-btn" onclick="showModal()" title="New Message">+</button>
+        </div>
+        <div class="contact-list" id="contactList">
+            <div style="padding:20px; text-align:center; color:#888;">Loading contacts...</div>
+        </div>
+    </div>
+
+    <div class="chat-panel">
+        <div class="message-header" id="msgHeader">
+            <span id="headerName">Select a conversation</span>
+            <button id="btnDelete" style="display:none; color:#dc3545; border:none; background:none; cursor:pointer; font-weight:bold;" onclick="deleteConversation()">Delete Chat</button>
+        </div>
+        <div class="messages-box" id="messageBox">
+            </div>
+        <div class="input-area" id="inputArea" style="display:none;">
+            <label for="fileInput" class="file-label">📎</label>
+            <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect()">
+            <input type="text" id="msgInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="btn-send" onclick="sendMessage()">Send</button>
+        </div>
+        <div id="filePreview" style="padding: 0 20px; font-size: 12px; color: #022d6d; display:none;"></div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+      <span class="lightbox-close">&times;</span>
+      <img id="lightboxImg" src="" onclick="event.stopPropagation()">
+  </div>
+
+  <div class="modal" id="newMsgModal">
+    <div class="modal-content">
+        <h3 style="color:#022d6d; margin-bottom:20px;">Compose Message</h3>
+        <div class="form-group">
+            <label>To:</label>
+            <select id="msgType" onchange="loadRecipients()">
+                <option value="">Select Type</option>
+                <option value="admin">Admin (CSOA/UFMO)</option>
+                </select>
+        </div>
+        <div class="form-group">
+            <label>Recipient:</label>
+            <select id="msgRecipient"><option value="">Select Type First...</option></select>
+        </div>
+        <div class="form-group">
+            <label>Subject:</label>
+            <input type="text" id="msgSubject" placeholder="e.g., Event Inquiry">
+        </div>
+        <div class="form-group">
+            <label>Message:</label>
+            <textarea id="msgBody" rows="4"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button onclick="document.getElementById('newMsgModal').style.display='none'" style="background:#ccc; border:none; padding:10px 20px; border-radius:4px; cursor:pointer;">Cancel</button>
+            <button onclick="startChat()" style="background:#022d6d; color:white; border:none; padding:10px 20px; border-radius:4px; cursor:pointer;">Send</button>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '../../api';
+    const orgId = localStorage.getItem('orgId');
+    const orgName = localStorage.getItem('orgName');
+
+    if (!orgId) window.location.href = '../login_signup.html';
+    if(orgName) document.getElementById('orgNameDisplay').textContent = orgName;
+
+    let currentContact = null;
+
+    // --- ALERT SYSTEM ---
+    function customAlert(msg, type='info', callback) {
+        const overlay = document.getElementById('customAlertOverlay');
+        const title = document.getElementById('alertTitle');
+        const body = document.getElementById('alertBody');
+        const footer = document.getElementById('alertFooter');
+
+        title.textContent = type === 'confirm' ? 'Confirm Action' : (type === 'error' ? 'Error' : 'Notification');
+        body.textContent = msg;
+        
+        if(type === 'confirm') {
+            footer.innerHTML = `
+                <button class="btn-alert-cancel" id="alertCancelBtn">Cancel</button>
+                <button class="btn-alert" id="alertOkBtn">Confirm</button>
+            `;
+            document.getElementById('alertOkBtn').onclick = () => { overlay.style.display = 'none'; if(callback) callback(true); };
+            document.getElementById('alertCancelBtn').onclick = () => { overlay.style.display = 'none'; if(callback) callback(false); };
+        } else {
+            footer.innerHTML = `<button class="btn-alert" onclick="document.getElementById('customAlertOverlay').style.display='none'">OK</button>`;
+        }
+        overlay.style.display = 'flex';
+    }
+
+    // Poll Updates
+    async function pollUpdates() {
+        try {
+            const resCount = await fetch(`${API_BASE}/messages.php?action=unread_count&user_id=${orgId}&user_type=organization`);
+            const dataCount = await resCount.json();
+            
+            if(dataCount.count > 0) document.getElementById('sidebarBadge').style.display = 'block';
+            else document.getElementById('sidebarBadge').style.display = 'none';
+
+            if(!currentContact) loadContacts();
+        } catch(e) { console.error(e); }
+    }
+
+    async function loadContacts() {
+        try {
+            const res = await fetch(`${API_BASE}/messages.php?user_id=${orgId}&user_type=organization`);
+            const data = await res.json();
+            
+            const list = document.getElementById('contactList');
+            const currentId = currentContact ? currentContact.contact_id : null;
+            list.innerHTML = '';
+            
+            if(!data.contacts || data.contacts.length === 0) {
+                list.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">No messages yet.</div>';
+                return;
+            }
+
+            data.contacts.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'contact-item';
+                if(currentId == c.contact_id) div.classList.add('active');
+                
+                const badgeDisplay = c.unread_count > 0 ? 'inline-block' : 'none';
+
+                div.innerHTML = `
+                    <div class="contact-info">
+                        <span class="contact-name">${c.name}</span>
+                        <span class="contact-role">${c.sub || c.contact_type}</span>
+                    </div>
+                    <span class="unread-badge" style="display:${badgeDisplay}">${c.unread_count}</span>
+                `;
+                div.onclick = () => openChat(c, div);
+                list.appendChild(div);
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    async function openChat(contact, element) {
+        currentContact = contact;
+        document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        document.getElementById('headerName').innerText = contact.name || `ID: ${contact.contact_id}`;
+        document.getElementById('btnDelete').style.display = 'block';
+        document.getElementById('inputArea').style.display = 'flex';
+        
+        // Clear input on chat switch
+        document.getElementById('msgInput').value = '';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('filePreview').style.display = 'none';
+
+        fetchMessages();
+    }
+
+    async function fetchMessages() {
+        if(!currentContact) return;
+        try {
+            const res = await fetch(`${API_BASE}/messages.php?user_id=${orgId}&user_type=organization&contact_id=${currentContact.contact_id}&contact_type=${currentContact.contact_type}`);
+            const data = await res.json();
+            
+            const box = document.getElementById('messageBox');
+            box.innerHTML = '';
+            
+            data.messages.forEach(msg => {
+                const isMe = msg.sender_type === 'organization';
+                const div = document.createElement('div');
+                div.className = `message-bubble ${isMe ? 'msg-sent' : 'msg-received'}`;
+                
+                // Attachment Logic
+                let attachHtml = '';
+                if(msg.attachment_path) {
+                    if(msg.attachment_type && ['jpg','jpeg','png','gif'].includes(msg.attachment_type)) {
+                        attachHtml = `<div class="msg-attachment">
+                            <img src="${msg.attachment_path}" class="attachment-img" onclick="openLightbox('${msg.attachment_path}')" alt="Image">
+                        </div>`;
+                    } else {
+                        attachHtml = `<div class="msg-attachment"><a href="${msg.attachment_path}" target="_blank" class="attachment-link">📄 Download ${msg.attachment_name}</a></div>`;
+                    }
+                }
+
+                div.innerHTML = `${msg.message_body}${attachHtml}`;
+                box.appendChild(div);
+            });
+            box.scrollTop = box.scrollHeight;
+            pollUpdates(); // Reset badge
+        } catch(e) { console.error(e); }
+    }
+
+    function handleFileSelect() {
+        const file = document.getElementById('fileInput').files[0];
+        const preview = document.getElementById('filePreview');
+        if(file) {
+            preview.innerText = `Selected: ${file.name}`;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // Lightbox
+    function openLightbox(src) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('msgInput');
+        const fileInput = document.getElementById('fileInput');
+        
+        if(!input.value.trim() && !fileInput.files[0]) return;
+
+        const formData = new FormData();
+        formData.append('sender_type', 'organization');
+        formData.append('sender_id', orgId);
+        formData.append('receiver_type', currentContact.contact_type);
+        formData.append('receiver_id', currentContact.contact_id);
+        formData.append('message_body', input.value);
+        
+        if(fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+
+        try {
+            await fetch(`${API_BASE}/messages.php`, { method: 'POST', body: formData });
+            
+            // Clear input after send
+            input.value = '';
+            fileInput.value = '';
+            document.getElementById('filePreview').style.display = 'none';
+            
+            fetchMessages();
+        } catch(e) { customAlert("Failed to send message.", "error"); }
+    }
+
+    async function deleteConversation() {
+        customAlert("Delete this conversation?", 'confirm', async (confirmed) => {
+            if(confirmed) {
+                try {
+                    await fetch(`${API_BASE}/messages.php?user_id=${orgId}&user_type=organization&contact_id=${currentContact.contact_id}&contact_type=${currentContact.contact_type}`, { method: 'DELETE' });
+                    location.reload();
+                } catch(e) { customAlert("Delete failed.", "error"); }
+            }
+        });
+    }
+
+    // Modal Logic
+    function showModal() { 
+        document.getElementById('newMsgModal').style.display = 'flex'; 
+        // Clear modal
+        document.getElementById('msgType').value = '';
+        document.getElementById('msgRecipient').innerHTML = '<option value="">Select Type First...</option>';
+        document.getElementById('msgSubject').value = '';
+        document.getElementById('msgBody').value = '';
+    }
+
+    // --- FIX: DYNAMIC FETCHING ---
+    async function loadRecipients() {
+        const type = document.getElementById('msgType').value;
+        const sel = document.getElementById('msgRecipient');
+        sel.innerHTML = '<option>Loading...</option>';
+        
+        if(type) {
+            try {
+                const res = await fetch(`${API_BASE}/messages.php?action=get_recipients&type=${type}`);
+                const result = await res.json();
+                
+                sel.innerHTML = '';
+                if(result.success && result.data.length > 0) {
+                    result.data.forEach(item => {
+                        sel.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                    });
+                } else {
+                    sel.innerHTML = '<option value="">No recipients found</option>';
+                }
+            } catch(e) {
+                console.error(e);
+                sel.innerHTML = '<option value="">Error loading list</option>';
+            }
+        } else {
+            sel.innerHTML = '<option value="">Select Type First...</option>';
+        }
+    }
+
+    async function startChat() {
+        const type = document.getElementById('msgType').value;
+        const recId = document.getElementById('msgRecipient').value;
+        const sub = document.getElementById('msgSubject').value;
+        const body = document.getElementById('msgBody').value;
+
+        if(!recId || !body) { customAlert("Please fill all required fields.", "error"); return; }
+
+        const formData = new FormData();
+        formData.append('sender_type', 'organization');
+        formData.append('sender_id', orgId);
+        formData.append('receiver_type', type);
+        formData.append('receiver_id', recId);
+        formData.append('subject', sub);
+        formData.append('message_body', body);
+        formData.append('category', 'General');
+
+        try {
+            await fetch(`${API_BASE}/messages.php`, { method: 'POST', body: formData });
+            document.getElementById('newMsgModal').style.display = 'none';
+            loadContacts();
+        } catch(e) { customAlert("Failed to start chat.", "error"); }
+    }
+
+    function logout() {
+        customAlert("Are you sure you want to logout?", 'confirm', (c) => {
+            if(c) {
+                localStorage.removeItem("orgName");
+                localStorage.removeItem("orgId");
+                window.location.href = "../login_signup.html"; 
+            }
+        });
+    }
+
+    // Init
+    loadContacts();
+    setInterval(() => {
+        if (currentContact) fetchMessages();
+        pollUpdates();
+    }, 5000);
+  </script>
+</body>
+</html>

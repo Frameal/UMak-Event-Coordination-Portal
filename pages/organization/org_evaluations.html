@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University of Makati - Event Evaluations</title>
+  <style>
+    /* GLOBAL */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Century Gothic', sans-serif;
+    }
+
+    body {
+      background-color: #f4f5f7;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 30px;
+      height: 60px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    nav img {
+      height: 35px;
+      margin-left: 10px;
+    }
+
+    .nav-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nav-right .account-link { color: #ccc; font-size: 12px; text-decoration: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; transition: 0.3s; }
+    .nav-right .account-link:hover { color: white; border-color: white; }
+
+    .nav-title .main-title {
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      font-weight: bold;
+    }
+
+    .nav-title .org-name {
+      font-size: 12px;
+      color: #f36b00;
+      font-weight: normal;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      top: 60px; 
+      left: 0;
+      width: 220px;
+      background-color: white;
+      bottom: 0;
+      border-right: 1px solid #ddd;
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 20px;
+      color: #022d6d;
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #022d6d;
+      color: white;
+      border-radius: 4px;
+      margin: 0 10px;
+    }
+
+    .logout-btn {
+      background-color: #f30000;
+      color: white;
+      border: none;
+      width: 80%;
+      padding: 10px;
+      margin: 20px auto;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .logout-btn:hover {
+      background-color: #d00000;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      margin-left: 230px;
+      margin-top: 80px; 
+      padding: 30px;
+      flex: 1;
+    }
+
+    /* EVENTS LIST VIEW */
+    .events-list-view {
+      display: block;
+    }
+
+    .page-header {
+      margin-bottom: 30px;
+    }
+
+    .page-header h2 {
+      color: #f36b00;
+      font-weight: normal;
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .filters {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .filter-item label {
+      font-size: 13px;
+      color: #022d6d;
+      font-weight: bold;
+    }
+
+    .filter-item select,
+    .filter-item input {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      min-width: 150px;
+    }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .event-eval-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .event-eval-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    .event-card-header {
+      background: linear-gradient(135deg, #022d6d 0%, #00509e 100%);
+      color: white;
+      padding: 20px;
+    }
+
+    .event-card-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .event-card-date {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .event-card-body {
+      padding: 20px;
+    }
+
+    .eval-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .stat-box {
+      text-align: center;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 6px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #022d6d;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 5px;
+    }
+
+    .avg-rating {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 15px;
+      background-color: #fff3cd;
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+
+    .rating-stars {
+      color: #ffc107;
+      font-size: 20px;
+    }
+
+    .rating-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #022d6d;
+    }
+
+    .btn-view-eval {
+      width: 100%;
+      padding: 12px;
+      background-color: #022d6d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 15px;
+      transition: 0.3s;
+    }
+
+    .btn-view-eval:hover {
+      background-color: #00328f;
+    }
+
+    /* EVALUATION DETAILS VIEW */
+    .eval-details-view {
+      display: none;
+    }
+
+    .back-btn {
+      background-color: #6c757d;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 20px;
+      transition: 0.3s;
+    }
+
+    .back-btn:hover {
+      background-color: #5a6268;
+    }
+
+    .eval-header {
+      background-color: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .eval-header h2 {
+      color: #022d6d;
+      font-size: 24px;
+      margin-bottom: 15px;
+    }
+
+    .eval-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .summary-card {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .summary-card h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .summary-card .value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #022d6d;
+    }
+
+    /* QUESTIONS SECTION */
+    .questions-section {
+      background-color: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .questions-section h3 {
+      color: #022d6d;
+      margin-bottom: 20px;
+      font-size: 20px;
+      border-bottom: 2px solid #f36b00;
+      padding-bottom: 10px;
+    }
+
+    .category-group {
+      margin-bottom: 30px;
+    }
+    
+    .category-title {
+        font-size: 16px;
+        color: #333;
+        font-weight: bold;
+        margin-bottom: 15px;
+        background: #f0f0f0;
+        padding: 8px;
+        border-radius: 4px;
+    }
+
+    .rating-bar {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 12px;
+    }
+
+    .rating-label {
+      width: 250px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .bar-container {
+      flex: 1;
+      height: 25px;
+      background-color: #e9ecef;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #022d6d 0%, #00509e 100%);
+      transition: width 0.6s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .rating-value {
+      width: 50px;
+      text-align: right;
+      font-weight: bold;
+      color: #022d6d;
+    }
+
+    /* FEEDBACK SECTION */
+    .feedback-section {
+      background-color: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .feedback-section h3 {
+      color: #022d6d;
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .feedback-card {
+      background-color: #f8f9fa;
+      border-left: 4px solid #022d6d;
+      padding: 15px 20px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .feedback-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .feedback-text {
+      color: #333;
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    .no-feedback {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    /* FOOTER */
+    footer {
+      background-color: #242424;
+      color: #f36b00;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding: 40px 80px;
+      font-size: 16px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+
+    footer .footer-section {
+      max-width: 400px;
+      margin-left: 80px;
+    }
+
+    footer h4 {
+      color: #f36b00;
+      margin-bottom: 10px;
+    }
+
+    footer p {
+      color: white;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    footer a {
+      color: white;
+      text-decoration: underline;
+      font-size: 14px;
+    }
+
+    footer a:hover {
+      color: #f36b00;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .events-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .eval-summary {
+        grid-template-columns: 1fr;
+      }
+      
+      .rating-bar {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 5px;
+      }
+      .bar-container {
+          width: 100%;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav>
+    <div class="nav-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <div class="nav-title">
+        <span class="main-title">University of Makati - ECP</span>
+        <span class="org-name" id="orgNameDisplay">Loading...</span>
+      </div>
+    </div>
+    <div class="nav-right">
+        <a href="org_account.html" class="account-link">⚙️ Settings</a>
+    </div>
+  </nav>
+
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div>
+      <a href="org_dashboard.html">
+        <span>Dashboard</span>
+      </a>
+      <a href="org_events.html">
+        <span>My Events</span>
+      </a>
+      <a href="org_create_event.html">
+        <span>Create Event</span>
+      </a>
+      <a href="org_scan_qr.html">
+        <span>Scan QR Code</span>
+      </a>
+      <a href="#" class="active">
+        <span>Evaluations</span>
+      </a>
+      <a href="org_messages.html">
+        <span>Messages</span>
+      </a>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- EVENTS LIST VIEW -->
+    <div class="events-list-view" id="eventsListView">
+      <div class="page-header">
+        <h2>Event Evaluations</h2>
+        <p>View and analyze post-event evaluations from students.</p>
+      </div>
+
+      <div class="filters">
+        <div class="filter-item">
+          <label>Filter by Status</label>
+          <select id="filterStatus" onchange="filterEvents()">
+            <option value="all">All Events</option>
+            <option value="Completed">Completed</option>
+            <option value="Published">Published</option>
+            <option value="Ongoing">Ongoing</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label>Search</label>
+          <input type="text" id="searchEvent" placeholder="Search event name..." onkeyup="filterEvents()">
+        </div>
+      </div>
+
+      <div class="events-grid" id="eventsGrid">
+        <p style="grid-column:1/-1; text-align:center;">Loading events...</p>
+      </div>
+    </div>
+
+    <!-- EVALUATION DETAILS VIEW -->
+    <div class="eval-details-view" id="evalDetailsView">
+      <button class="back-btn" onclick="showEventsList()">← Back to Events</button>
+
+      <div class="eval-header">
+        <h2 id="evalEventName">Event Name</h2>
+        <div class="eval-summary" id="evalSummary">
+          <!-- Summary cards inserted here -->
+        </div>
+      </div>
+
+      <div class="questions-section">
+        <h3>Performance Analysis (Average Rating / 5.0)</h3>
+        <div id="breakdownContainer">
+          <!-- Bars inserted here -->
+        </div>
+      </div>
+
+      <div class="feedback-section">
+        <h3>Student Feedback & Comments</h3>
+        <div id="feedbackContainer">
+          <!-- Feedback cards inserted here -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-section">
+      <h4>About ECP</h4>
+      <p>
+        The Event Coordination Portal serves as the central management system for events
+        organized by the colleges of the University of Makati.
+      </p>
+    </div>
+    <div class="footer-section">
+      <h4>Links</h4>
+      <a href="https://www.umak.edu.ph/" target="_blank">University of Makati</a>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = '../../api';
+    const orgId = localStorage.getItem('orgId');
+    const orgName = localStorage.getItem('orgName');
+
+    if(!orgId) window.location.href = '../login_signup.html';
+    document.getElementById('orgNameDisplay').innerText = orgName;
+
+    let allEvents = [];
+
+    // --- LOAD EVENTS LIST ---
+    async function loadEvents() {
+        try {
+            const res = await fetch(`${API_BASE}/org_evaluations.php?org_id=${orgId}`);
+            const data = await res.json();
+
+            if (data.success) {
+                allEvents = data.events;
+                renderEventsGrid(allEvents);
+            } else {
+                document.getElementById('eventsGrid').innerHTML = `<p style="text-align:center;">${data.message}</p>`;
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    function renderEventsGrid(events) {
+        const grid = document.getElementById('eventsGrid');
+        grid.innerHTML = '';
+
+        if (events.length === 0) {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">No events found</div>';
+            return;
+        }
+
+        events.forEach(event => {
+            const totalEvals = parseInt(event.total_evaluations) || 0;
+            const totalAttendees = parseInt(event.total_attendees) || 0;
+            const avgRating = parseFloat(event.overall_rating || 0).toFixed(1);
+            
+            // Calculate Response Rate safely
+            const respRate = totalAttendees > 0 ? Math.round((totalEvals / totalAttendees) * 100) : 0;
+            
+            // Stars
+            const stars = '★'.repeat(Math.round(avgRating));
+
+            const card = document.createElement('div');
+            card.className = 'event-eval-card';
+            card.onclick = () => loadEvaluationDetails(event.event_id);
+
+            card.innerHTML = `
+              <div class="event-card-header">
+                <div class="event-card-title">${event.event_name}</div>
+                <div class="event-card-date">${new Date(event.event_date).toDateString()}</div>
+              </div>
+              <div class="event-card-body">
+                <div class="eval-stats">
+                  <div class="stat-box">
+                    <div class="stat-value">${totalEvals}</div>
+                    <div class="stat-label">Responses</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-value">${respRate}%</div>
+                    <div class="stat-label">Response Rate</div>
+                  </div>
+                </div>
+                ${avgRating > 0 ? `
+                  <div class="avg-rating">
+                    <span class="rating-stars">${stars}</span>
+                    <span class="rating-number">${avgRating}/5.0</span>
+                  </div>
+                ` : '<div style="text-align: center; padding: 15px; color: #666;">No ratings yet</div>'}
+                
+                <button class="btn-view-eval" onclick="event.stopPropagation(); loadEvaluationDetails(${event.event_id})">
+                  View Detailed Report
+                </button>
+              </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function filterEvents() {
+        const status = document.getElementById('filterStatus').value;
+        const search = document.getElementById('searchEvent').value.toLowerCase();
+
+        const filtered = allEvents.filter(ev => {
+            const matchStatus = status === 'all' || ev.status === status;
+            const matchSearch = ev.event_name.toLowerCase().includes(search);
+            return matchStatus && matchSearch;
+        });
+        renderEventsGrid(filtered);
+    }
+
+    // --- LOAD SINGLE EVENT DETAILS ---
+    async function loadEvaluationDetails(eventId) {
+        try {
+            const res = await fetch(`${API_BASE}/org_evaluations.php?event_id=${eventId}&org_id=${orgId}`);
+            const data = await res.json();
+
+            if(data.success) {
+                renderDetailsView(data);
+                document.getElementById('eventsListView').style.display = 'none';
+                document.getElementById('evalDetailsView').style.display = 'block';
+                window.scrollTo(0,0);
+            } else {
+                alert(data.message);
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    function renderDetailsView(data) {
+        const info = data.event_info;
+        const stats = data.stats;
+        const totalAttendees = parseInt(data.total_attendees) || 0;
+        const totalEvals = parseInt(stats.response_count) || 0;
+        const respRate = totalAttendees > 0 ? Math.round((totalEvals/totalAttendees)*100) : 0;
+
+        // Calculate Overall Average from the sub-averages
+        const fields = [
+            'avg_obj_clarity', 'avg_obj_relevance', 'avg_cond_flow', 'avg_cond_facilitators', 'avg_cond_activities',
+            'avg_res_mastery', 'avg_res_presentation', 'avg_res_participation', 
+            'avg_tech_venue', 'avg_tech_schedule', 'avg_tech_accommodation', 'avg_tech_sounds'
+        ];
+        
+        let sum = 0, count = 0;
+        fields.forEach(f => {
+            const val = parseFloat(stats[f] || 0);
+            if(val > 0) { sum += val; count++; }
+        });
+        const overallAvg = count > 0 ? (sum / count).toFixed(1) : "0.0";
+
+        // 1. Header
+        document.getElementById('evalEventName').textContent = info.event_name;
+        document.getElementById('evalSummary').innerHTML = `
+            <div class="summary-card"><h3>Total Responses</h3><div class="value">${totalEvals}</div></div>
+            <div class="summary-card"><h3>Response Rate</h3><div class="value">${respRate}%</div></div>
+            <div class="summary-card"><h3>Overall Rating</h3><div class="value">${overallAvg}/5.0</div></div>
+            <div class="summary-card"><h3>Total Attendees</h3><div class="value">${totalAttendees}</div></div>
+        `;
+
+        // 2. Breakdown Bars
+        const container = document.getElementById('breakdownContainer');
+        container.innerHTML = '';
+
+        const createBar = (label, value) => {
+            const val = parseFloat(value || 0).toFixed(2);
+            const percent = (val / 5) * 100;
+            return `
+            <div class="rating-bar">
+              <div class="rating-label">${label}</div>
+              <div class="bar-container">
+                <div class="bar-fill" style="width: ${percent}%">${val}</div>
+              </div>
+              <div class="rating-value">${val}</div>
+            </div>`;
+        };
+
+        // Categorized Breakdown
+        if(totalEvals > 0) {
+            container.innerHTML += `<div class="category-group"><div class="category-title">I. Objectives</div>
+                ${createBar('Clarity of Objectives', stats.avg_obj_clarity)}
+                ${createBar('Relevance to Needs', stats.avg_obj_relevance)}
+            </div>`;
+
+            container.innerHTML += `<div class="category-group"><div class="category-title">II. Conduct of Activity</div>
+                ${createBar('Flow & Organization', stats.avg_cond_flow)}
+                ${createBar('Facilitators', stats.avg_cond_facilitators)}
+                ${createBar('Activities', stats.avg_cond_activities)}
+            </div>`;
+
+            container.innerHTML += `<div class="category-group"><div class="category-title">III. Resource Person</div>
+                ${createBar('Mastery of Topic', stats.avg_res_mastery)}
+                ${createBar('Presentation Skills', stats.avg_res_presentation)}
+                ${createBar('Participation', stats.avg_res_participation)}
+            </div>`;
+
+            container.innerHTML += `<div class="category-group"><div class="category-title">IV. Technical Aspects</div>
+                ${createBar('Venue Suitability', stats.avg_tech_venue)}
+                ${createBar('Time Management', stats.avg_tech_schedule)}
+                ${createBar('Accommodation', stats.avg_tech_accommodation)}
+                ${createBar('Sound/Visuals', stats.avg_tech_sounds)}
+            </div>`;
+        } else {
+            container.innerHTML = '<p class="no-feedback">No data to display.</p>';
+        }
+
+        // 3. Comments
+        const fbContainer = document.getElementById('feedbackContainer');
+        fbContainer.innerHTML = '';
+        if(data.comments.length > 0) {
+            data.comments.forEach(c => {
+                fbContainer.innerHTML += `
+                    <div class="feedback-card">
+                        <div class="feedback-meta">
+                            <span>Student: ${c.student_number || 'Anonymous'}</span>
+                            <span>${new Date(c.submitted_at).toLocaleDateString()}</span>
+                        </div>
+                        <div class="feedback-text">"${c.comments}"</div>
+                    </div>`;
+            });
+        } else {
+            fbContainer.innerHTML = '<div class="no-feedback">No written comments found.</div>';
+        }
+    }
+
+    function showEventsList() {
+        document.getElementById('evalDetailsView').style.display = 'none';
+        document.getElementById('eventsListView').style.display = 'block';
+    }
+
+    function logout() {
+        if(confirm("Logout?")) {
+            localStorage.removeItem('orgId');
+            window.location.href = '../login_signup.html';
+        }
+    }
+
+    // Init
+    loadEvents();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>University of Makati - ECP Venues</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    /* --- GLOBAL --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic', sans-serif; }
+    body { background-color: #f4f5f7; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* --- NAV --- */
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 40px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+      font-size: 16px;
+      font-weight: normal;
+    }
+
+    .navbar-left img {
+      height: 40px;
+    }
+
+    .navbar-links {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+
+    .navbar-links li a {
+      text-decoration: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 3px;
+      transition: 0.3s;
+    }
+
+    .navbar-links li a:hover,
+    .navbar-links li a.active-link {
+      background-color: #f36b00;
+      color: white;
+    }
+
+    /* NAV RIGHT - Settings & Logout */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-right .account-link {
+      color: #ccc;
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      border-radius: 15px;
+      transition: 0.3s;
+    }
+
+    .nav-right .account-link:hover {
+      color: white;
+      border-color: white;
+    }
+    .logout-btn { background-color: #f30000; color: white; border: none; border-radius: 4px; padding: 10px 25px; cursor: pointer; transition: 0.3s; }
+    .logout-btn:hover { background-color: #d00000; transform: scale(1.05); }
+
+    /* --- MAIN --- */
+    main { flex: 1; padding: 40px 60px; }
+    .section-title { font-size: 22px; color: #f36b00; margin-bottom: 20px; font-weight: bold; }
+
+    /* --- VENUES LIST --- */
+    .venues-section { background-color: white; border-radius: 8px; padding: 25px 30px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+    .venues-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .venues-header h2 { color: #f36b00; font-weight: bold; }
+
+    /* Buttons */
+    .header-actions { display: flex; gap: 10px; }
+    .btn-primary { background-color: #022d6d; color: white; border: none; border-radius: 4px; padding: 10px 20px; cursor: pointer; transition: 0.3s; font-size: 14px; }
+    .btn-primary:hover { background-color: #00328f; }
+    .btn-secondary { background-color: #f36b00; color: white; border: none; border-radius: 4px; padding: 10px 20px; cursor: pointer; transition: 0.3s; font-size: 14px; }
+    .btn-secondary:hover { background-color: #d45a00; }
+    .btn-export { background-color: #28a745; color: white; border: none; border-radius: 4px; padding: 10px 20px; cursor: pointer; transition: 0.3s; font-size: 14px; }
+    .btn-export:hover { background-color: #218838; }
+
+    /* Filters */
+    .filters { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: flex-end; }
+    .filter-item { display: flex; flex-direction: column; gap: 5px; }
+    .filter-item label { font-size: 13px; color: #022d6d; font-weight: bold; }
+    .filter-item select, .filter-item input, .filter-item textarea { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 200px; font-family: 'Century Gothic', sans-serif; }
+    .filter-item textarea { min-height: 80px; resize: vertical; }
+
+    /* --- CARD GRID --- */
+    .venues-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin-top: 20px; }
+    
+    .venue-card { 
+        background-color: #fff; 
+        border-radius: 8px; 
+        overflow: hidden; 
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+        transition: transform 0.3s, box-shadow 0.3s; 
+        border: 1px solid #e0e0e0; 
+        display: flex; 
+        flex-direction: column; 
+        cursor: pointer; 
+    }
+    .venue-card:hover { transform: translateY(-5px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+
+    .venue-image { width: 100%; height: 180px; background-size: cover; background-position: center; background-color: #ddd; }
+    
+    .venue-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .venue-name { color: #022d6d; font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+    .location-text { color: #666; font-size: 13px; margin-bottom: 15px; }
+    
+    .venue-status { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-bottom: 10px; align-self: flex-start; }
+    .status-available { background-color: #d4edda; color: #155724; }
+    .status-unavailable { background-color: #f8d7da; color: #721c24; }
+
+    /* Card Actions (Direct on Card) */
+    .venue-actions { margin-top: auto; display: flex; gap: 5px; padding-top: 15px; border-top: 1px solid #eee; }
+    .btn-card-action { flex: 1; padding: 8px; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
+    .btn-card-edit { background-color: #022d6d; }
+    .btn-card-edit:hover { background-color: #00328f; }
+    .btn-card-toggle { background-color: #f36b00; }
+    .btn-card-toggle:hover { background-color: #d45a00; }
+    .btn-card-delete { background-color: #dc3545; }
+    .btn-card-delete:hover { background-color: #c82333; }
+
+    /* --- DETAILS VIEW --- */
+    .venue-detail-section { display: none; background-color: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .back-btn { background-color: #022d6d; color: white; padding: 8px 16px; border: none; border-radius: 4px; margin-bottom: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+    .back-btn:hover { background-color: #00328f; }
+
+    .venue-header { display: flex; gap: 30px; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+    .venue-header img { width: 50%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .venue-info { flex: 1; }
+    .venue-info h2 { color: #1a2b6d; font-size: 28px; margin-bottom: 20px; }
+
+    .info-block { margin-bottom: 15px; }
+    .info-label { color: #f36b00; font-weight: bold; font-size: 14px; display: block; margin-bottom: 3px; text-transform: uppercase; }
+    .info-value { font-size: 15px; color: #333; margin-left: 10px; line-height: 1.5; }
+
+    .description { margin-top: 10px; padding-top: 0; }
+    .description h3 { color: #022d6d; margin-bottom: 15px; font-size: 20px; border-left: 4px solid #f36b00; padding-left: 10px; }
+    .description p { font-size: 15px; color: #444; line-height: 1.6; margin-bottom: 20px; white-space: pre-line; }
+
+    /* --- FORM STYLES --- */
+    .image-upload { border: 2px dashed #ddd; padding: 20px; text-align: center; cursor: pointer; background: #fafafa; border-radius: 4px; }
+    .image-upload:hover { border-color: #022d6d; background: #f0f4f8; }
+    #previewImage { max-width: 100%; max-height: 200px; margin-top: 10px; display: none; border-radius: 4px; }
+
+    /* --- EXPORT PDF STYLES (Hidden from Screen) --- */
+    #exportContent { display: none; }
+    
+    /* --- ALERTS --- */
+    .alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+    .alert-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+    .alert-error { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+
+    /* --- FOOTER --- */
+    footer { background-color: #242424; color: #f36b00; display: flex; justify-content: space-around; padding: 40px 20px; flex-wrap: wrap; margin-top: auto; }
+    .footer-column { max-width: 400px; }
+    .footer-column h4 { margin-bottom: 10px; color: #f36b00; }
+    .footer-column p, .footer-column a { color: white; font-size: 14px; line-height: 1.6; text-decoration: none; }
+    .footer-column a:hover { color: #f36b00; text-decoration: underline; }
+
+    /* --- PRINT/PDF --- */
+    @media print {
+        nav, .header-actions, .filters, .venue-actions, footer, .back-btn { display: none !important; }
+        main { padding: 0; }
+    }
+
+    @media (max-width: 768px) {
+      .venues-grid { grid-template-columns: 1fr; }
+      .venue-header { flex-direction: column; }
+      .venue-header img { width: 100%; }
+      .filters { flex-direction: column; }
+      .filter-item select, .filter-item input, .filter-item textarea { width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="navbar-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <span>University of Makati - ECP</span>
+    </div>
+
+    <ul class="navbar-links">
+      <li><a href="admin_dashboard.html">Dashboard</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="admin_events.html">Events & Booking</a></li>
+      <li><a href="#"" class="active-link">Venues</a></li>
+      <li><a href="admin_post_evaluations.html">Post-Evaluation</a></li>
+      <li><a href="admin_messages.html">Messages</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <a href="admin_account.html" class="account-link">⚙️ Settings</a>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <main id="mainContent">
+    <div class="section-title">Venues Management</div>
+    
+    <div id="alertContainer"></div>
+
+    <div id="venueFormContainer" style="display: none; margin-bottom: 20px;">
+      <div class="venues-section">
+        <div class="venues-header">
+          <h2 id="venueFormTitle">Add New Venue</h2>
+          <button class="btn-secondary" onclick="cancelVenueForm()">Cancel</button>
+        </div>
+        <form id="venueForm" enctype="multipart/form-data">
+          <input type="hidden" name="venue_id" id="venue_id">
+          
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 20px;">
+            <div class="filter-item">
+              <label>Venue Name <span style="color: red;">*</span></label>
+              <input type="text" name="venue_name" id="venue_name" required placeholder="e.g. Grand Theater">
+            </div>
+            <div class="filter-item">
+              <label>Capacity <span style="color: red;">*</span></label>
+              <input type="number" name="capacity" id="capacity" required placeholder="100" min="1">
+            </div>
+            <div class="filter-item">
+              <label>Location <span style="color: red;">*</span></label>
+              <input type="text" name="location" id="location" required placeholder="e.g. HPSB 5th Floor">
+            </div>
+            <div class="filter-item">
+              <label>Availability</label>
+              <select name="is_available" id="is_available">
+                <option value="1" selected>Available</option>
+                <option value="0">Unavailable</option>
+              </select>
+            </div>
+            
+            <div class="filter-item" style="grid-column: 1 / -1;">
+                <label>Venue Image</label>
+                <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+                    <span>Click to Upload Image</span>
+                    <input type="file" id="imageInput" name="image" accept="image/*" style="display:none" onchange="previewFile()">
+                </div>
+                <img id="previewImage" src="">
+            </div>
+
+            <div class="filter-item" style="grid-column: 1 / -1;">
+              <label>Amenities</label>
+              <textarea name="amenities" id="amenities" placeholder="Comma separated: AC, Projector, Sound System"></textarea>
+            </div>
+            <div class="filter-item" style="grid-column: 1 / -1;">
+              <label>Description / Rules</label>
+              <textarea name="description" id="description" placeholder="Brief description, rules, and regulations..."></textarea>
+            </div>
+          </div>
+          
+          <div style="text-align: left;">
+            <button type="submit" class="btn-primary" id="venueSubmitBtn">Save Venue</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="venues-section" id="venuesListSection">
+      <div class="venues-header">
+        <h2>Venue List</h2>
+        <div class="header-actions">
+          <button class="btn-primary" onclick="showAddVenueForm()">Add New Venue</button>
+          <button class="btn-export" onclick="exportToPDF()">Export Report</button>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="filter-item">
+          <label>Availability</label>
+          <select id="filterAvailability" onchange="filterVenues()">
+            <option value="all">All Venues</option>
+            <option value="1">Available</option>
+            <option value="0">Unavailable</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Search</label>
+          <input type="text" id="searchVenue" placeholder="Search venue name or location..." onkeyup="filterVenues()">
+        </div>
+        <div class="filter-item">
+          <label>Sort By</label>
+          <select id="sortVenue" onchange="sortVenues()">
+            <option value="name">Name (A-Z)</option>
+            <option value="capacity-high">Capacity (High to Low)</option>
+            <option value="capacity-low">Capacity (Low to High)</option>
+            <option value="location">Location</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="venues-grid" id="venuesGrid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">Loading venues...</div>
+      </div>
+    </div>
+
+    <div class="venue-detail-section" id="venueDetailsSection">
+        <button class="back-btn" onclick="closeDetails()">← Back to Venues</button>
+        
+        <div class="venue-header">
+          <img id="detailImage" src="" alt="Venue Image">
+          <div class="venue-info">
+            <h2 id="detailName">Venue Name</h2>
+            <div class="info-block">
+              <span class="info-label">Status</span>
+              <div class="info-value" id="detailStatus">Available</div>
+            </div>
+            <div class="info-block">
+              <span class="info-label">Capacity</span>
+              <div class="info-value" id="detailCapacity">0 persons</div>
+            </div>
+            <div class="info-block">
+              <span class="info-label">Location</span>
+              <div class="info-value" id="detailLocation">Location</div>
+            </div>
+            <div class="info-block">
+              <span class="info-label">Amenities</span>
+              <div class="info-value" id="detailAmenities">None listed</div>
+            </div>
+          </div>
+        </div>
+    
+        <div class="description">
+          <h3>About this Venue / Rules</h3>
+          <p id="detailDescription">No description provided.</p>
+        </div>
+    </div>
+
+    <div id="exportContent">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #022d6d;">University of Makati</h2>
+            <h3>Venue Management Report</h3>
+            <p>Generated on: <span id="exportDate"></span></p>
+        </div>
+        <div id="exportVenuesList">
+            </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-column">
+      <h4>About ECP</h4>
+      <p>The Event Coordination Portal serves as the central management system for events...</p>
+    </div>
+    <div class="footer-column">
+      <h4>Links</h4>
+      <a href="https://www.umak.edu.ph/" target="_blank">University of Makati</a>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = '../../api';
+    let allVenues = [];
+    let filteredVenues = [];
+    let isEditMode = false;
+    let currentVenueId = null;
+    const defaultImage = '../../images/UMAK LOGO.png';
+
+    // --- UTILITY ---
+    function showAlert(message, type) {
+        const div = document.createElement('div');
+        div.className = `alert alert-${type}`;
+        div.textContent = message;
+        const container = document.getElementById('alertContainer');
+        container.innerHTML = '';
+        container.appendChild(div);
+        setTimeout(() => div.remove(), 4000);
+    }
+
+    function previewFile() {
+        const file = document.getElementById('imageInput').files[0];
+        const preview = document.getElementById('previewImage');
+        if(file) {
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                preview.src = reader.result;
+                preview.style.display = "block";
+            }
+            reader.readAsDataURL(file);
+        } else {
+            preview.src = "";
+            preview.style.display = "none";
+        }
+    }
+
+    // --- MAIN LOGIC ---
+    async function loadVenues() {
+        try {
+            const response = await fetch(`${API_BASE}/admin_venues.php`);
+            allVenues = await response.json();
+            filteredVenues = [...allVenues];
+            
+            if (!Array.isArray(allVenues)) {
+                document.getElementById('venuesGrid').innerHTML = '<div style="text-align:center; width:100%">Failed to load data.</div>';
+                return;
+            }
+            
+            filterVenues(); 
+        } catch (error) {
+            console.error("Error:", error);
+            document.getElementById('venuesGrid').innerHTML = '<div style="text-align:center; width:100%">Connection error.</div>';
+        }
+    }
+
+    function renderVenues() {
+        const grid = document.getElementById('venuesGrid');
+        grid.innerHTML = '';
+
+        if (filteredVenues.length === 0) {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">No venues found.</div>';
+            return;
+        }
+
+        filteredVenues.forEach(venue => {
+            const isAvailable = venue.is_available == 1;
+            const statusClass = isAvailable ? 'status-available' : 'status-unavailable';
+            const statusText = isAvailable ? 'Available' : 'Unavailable';
+            const imageUrl = venue.image_url || defaultImage;
+
+            const card = document.createElement('div');
+            card.className = 'venue-card';
+            card.onclick = () => viewDetails(venue.venue_id);
+
+            card.innerHTML = `
+                <div class="venue-image" style="background-image: url('${imageUrl}')"></div>
+                <div class="venue-content">
+                    <div class="venue-name">${venue.venue_name}</div>
+                    <div class="venue-status ${statusClass}">${statusText}</div>
+                    <div class="location-text">📍 ${venue.location}</div>
+                    
+                    <div class="venue-actions">
+                        <button class="btn-card-action btn-card-edit" onclick="event.stopPropagation(); editVenue(${venue.venue_id})">Edit</button>
+                        <button class="btn-card-action btn-card-toggle" onclick="event.stopPropagation(); toggleAvailability(${venue.venue_id}, ${venue.is_available})">
+                            ${isAvailable ? 'Disable' : 'Enable'}
+                        </button>
+                        <button class="btn-card-action btn-card-delete" onclick="event.stopPropagation(); deleteVenue(${venue.venue_id})">Delete</button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function filterVenues() {
+        const availability = document.getElementById("filterAvailability").value;
+        const search = document.getElementById("searchVenue").value.toLowerCase();
+
+        filteredVenues = allVenues.filter(venue => {
+            const matchAvail = availability === "all" || venue.is_available == availability;
+            const matchSearch = venue.venue_name.toLowerCase().includes(search) || 
+                                venue.location.toLowerCase().includes(search);
+            return matchAvail && matchSearch;
+        });
+        sortVenues();
+    }
+
+    function sortVenues() {
+        const sortBy = document.getElementById("sortVenue").value;
+        filteredVenues.sort((a, b) => {
+            if (sortBy === 'name') return a.venue_name.localeCompare(b.venue_name);
+            if (sortBy === 'capacity-high') return b.capacity - a.capacity;
+            if (sortBy === 'capacity-low') return a.capacity - b.capacity;
+            if (sortBy === 'location') return a.location.localeCompare(b.location);
+            return 0;
+        });
+        renderVenues();
+    }
+
+    // --- VIEW DETAILS ---
+    function viewDetails(id) {
+        const venue = allVenues.find(v => v.venue_id == id);
+        if(!venue) return;
+
+        document.getElementById('detailName').textContent = venue.venue_name;
+        document.getElementById('detailCapacity').textContent = venue.capacity + " persons";
+        document.getElementById('detailLocation').textContent = venue.location;
+        document.getElementById('detailAmenities').textContent = venue.amenities || "None listed";
+        document.getElementById('detailDescription').textContent = venue.description || "No description provided.";
+        document.getElementById('detailImage').src = venue.image_url || defaultImage;
+
+        const isAvail = venue.is_available == 1;
+        const statusBadge = document.getElementById('detailStatus');
+        statusBadge.textContent = isAvail ? 'Available' : 'Unavailable';
+        statusBadge.className = isAvail ? 'info-value status-available' : 'info-value status-unavailable';
+        
+        document.getElementById('venuesListSection').style.display = 'none';
+        document.getElementById('venueFormContainer').style.display = 'none';
+        document.getElementById('venueDetailsSection').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+
+    function closeDetails() {
+        document.getElementById('venueDetailsSection').style.display = 'none';
+        document.getElementById('venueFormContainer').style.display = 'none';
+        document.getElementById('venuesListSection').style.display = 'block';
+    }
+
+    // --- FORM ACTIONS ---
+    function showAddVenueForm() {
+        isEditMode = false;
+        document.getElementById('venueFormTitle').textContent = 'Add New Venue';
+        document.getElementById('venueSubmitBtn').textContent = 'Save Venue';
+        
+        // FIXED: Force reset and clear file input manually
+        document.getElementById('venueForm').reset();
+        document.getElementById('venue_id').value = '';
+        document.getElementById('imageInput').value = ''; 
+        document.getElementById('previewImage').style.display = 'none';
+        document.getElementById('previewImage').src = '';
+        
+        document.getElementById('venueFormContainer').style.display = 'block';
+        document.getElementById('venuesListSection').style.display = 'none';
+        document.getElementById('venueDetailsSection').style.display = 'none';
+    }
+
+    function cancelVenueForm() {
+        // FIXED: Reset form and clear file input on cancel
+        document.getElementById('venueForm').reset();
+        document.getElementById('imageInput').value = '';
+        document.getElementById('previewImage').style.display = 'none';
+
+        document.getElementById('venueFormContainer').style.display = 'none';
+        document.getElementById('venuesListSection').style.display = 'block';
+    }
+
+    async function editVenue(id) {
+        const result = await fetch(`${API_BASE}/admin_venues.php?id=${id}`).then(r => r.json());
+        
+        if (result.success) {
+            const v = result.data;
+            isEditMode = true;
+            
+            // FIXED: Clear any existing file input value before populating
+            document.getElementById('imageInput').value = '';
+
+            document.getElementById('venueFormTitle').textContent = 'Edit Venue';
+            document.getElementById('venueSubmitBtn').textContent = 'Update Venue';
+            
+            document.getElementById('venue_id').value = v.venue_id;
+            document.getElementById('venue_name').value = v.venue_name;
+            document.getElementById('capacity').value = v.capacity;
+            document.getElementById('location').value = v.location;
+            document.getElementById('is_available').value = v.is_available;
+            document.getElementById('amenities').value = v.amenities || '';
+            document.getElementById('description').value = v.description || '';
+            
+            if (v.image_url) {
+                document.getElementById('previewImage').src = v.image_url;
+                document.getElementById('previewImage').style.display = 'block';
+            } else {
+                document.getElementById('previewImage').style.display = 'none';
+            }
+
+            document.getElementById('venueFormContainer').style.display = 'block';
+            document.getElementById('venuesListSection').style.display = 'none';
+        } else {
+            showAlert(result.message, 'error');
+        }
+    }
+
+    document.getElementById('venueForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        if(isEditMode) {
+            formData.append('venue_id', document.getElementById('venue_id').value);
+        }
+
+        const response = await fetch(`${API_BASE}/admin_venues.php`, {
+            method: 'POST', 
+            body: formData
+        });
+        
+        const result = await response.json();
+
+        if (result.success || (result.message && result.message.includes('success'))) {
+            showAlert(`Venue ${isEditMode ? 'updated' : 'created'} successfully!`, 'success');
+            
+            // FIXED: Reset form and clear file input after success
+            document.getElementById('venueForm').reset();
+            document.getElementById('imageInput').value = '';
+            
+            cancelVenueForm();
+            loadVenues();
+        } else {
+            showAlert(result.message || 'Operation failed', 'error');
+        }
+    });
+
+    async function toggleAvailability(id, currentStatus) {
+        const newStatus = currentStatus == 1 ? 0 : 1;
+        if (!confirm(`Change availability?`)) return;
+
+        const response = await fetch(`${API_BASE}/admin_venues.php`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ venue_id: id, is_available: newStatus })
+        });
+
+        const result = await response.json();
+        if (result.success || (result.message && result.message.includes('success'))) {
+            showAlert('Status updated!', 'success');
+            loadVenues();
+        } else {
+            showAlert('Update failed', 'error');
+        }
+    }
+
+    async function deleteVenue(id) {
+        if (!confirm("Delete this venue? This cannot be undone.")) return;
+        const response = await fetch(`${API_BASE}/admin_venues.php?id=${id}`, { method: 'DELETE' });
+        const result = await response.json();
+
+        if (result.success || (result.message && result.message.includes('success'))) {
+            showAlert('Venue deleted.', 'success');
+            loadVenues();
+        } else {
+            showAlert(result.message, 'error');
+        }
+    }
+
+    // --- EXPORT TO PDF ---
+    function exportToPDF() {
+        const date = new Date().toLocaleDateString();
+        document.getElementById('exportDate').textContent = date;
+        
+        const exportList = document.getElementById('exportVenuesList');
+        exportList.innerHTML = ''; 
+
+        filteredVenues.forEach(venue => {
+            const img = venue.image_url || defaultImage;
+            const item = document.createElement('div');
+            item.style.pageBreakInside = "avoid";
+            item.style.borderBottom = "1px solid #ddd";
+            item.style.padding = "20px";
+            item.style.display = "flex";
+            item.style.gap = "20px";
+            
+            item.innerHTML = `
+                <img src="${img}" style="width: 150px; height: 100px; object-fit: cover; border: 1px solid #ccc;">
+                <div>
+                    <h4 style="margin: 0 0 5px 0; color: #022d6d;">${venue.venue_name}</h4>
+                    <p style="margin: 0; font-size: 12px;"><strong>Location:</strong> ${venue.location}</p>
+                    <p style="margin: 0; font-size: 12px;"><strong>Capacity:</strong> ${venue.capacity}</p>
+                    <p style="margin: 0; font-size: 12px;"><strong>Status:</strong> ${venue.is_available == 1 ? 'Available' : 'Unavailable'}</p>
+                </div>
+            `;
+            exportList.appendChild(item);
+        });
+
+        const element = document.getElementById('exportContent');
+        element.style.display = 'block'; 
+
+        const opt = {
+            margin: 0.5,
+            filename: 'UMak_Venue_Report.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            element.style.display = 'none'; 
+        });
+    }
+
+    function logout() {
+        if(confirm("Logout?")) window.location.href = "../login_signup.html";
+    }
+
+    document.addEventListener('DOMContentLoaded', loadVenues);
+  </script>
+</body>
+</html>

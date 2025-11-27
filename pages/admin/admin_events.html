@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>University of Makati - Event Management</title>
+  
+  <!-- FullCalendar CSS -->
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+  
+  <style>
+    /* GLOBAL STYLES */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic', sans-serif; }
+    body { background-color: #f4f5f7; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 40px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+      font-size: 16px;
+      font-weight: normal;
+    }
+
+    .navbar-left img {
+      height: 40px;
+    }
+
+    .navbar-links {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+
+    .navbar-links li a {
+      text-decoration: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 3px;
+      transition: 0.3s;
+    }
+
+    .navbar-links li a:hover,
+    .navbar-links li a.active-link {
+      background-color: #f36b00;
+      color: white;
+    }
+
+    /* NAV RIGHT - Settings & Logout */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-right .account-link {
+      color: #ccc;
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      border-radius: 15px;
+      transition: 0.3s;
+    }
+
+    .nav-right .account-link:hover {
+      color: white;
+      border-color: white;
+    }
+    .logout-btn { background-color: #f30000; color: white; border: none; border-radius: 4px; padding: 10px 25px; cursor: pointer; }
+
+    /* MAIN */
+    main { flex: 1; padding: 30px 50px; display: flex; flex-direction: column; }
+    
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .page-title { color: #f36b00; font-size: 24px; font-weight: bold; }
+    
+    /* TABS */
+    .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+    .tab-btn { padding: 12px 25px; cursor: pointer; font-weight: bold; color: #666; border: none; background: none; font-size: 16px; transition: color 0.3s; }
+    .tab-btn.active { color: #022d6d; border-bottom: 3px solid #022d6d; margin-bottom: -2px; }
+    .tab-content { display: none; flex-grow: 1; }
+    .tab-content.active { display: block; }
+
+    /* CALENDAR VIEW */
+    .calendar-container { 
+        background: white; 
+        padding: 20px; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+        height: 75vh; 
+        min-height: 600px; 
+        display: flex;
+        flex-direction: column;
+    }
+    #calendar { flex-grow: 1; }
+
+    /* APPROVAL LIST VIEW */
+    .approval-list { display: grid; gap: 15px; }
+    .approval-card { background: white; padding: 20px; border-radius: 8px; border-left: 5px solid #022d6d; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+    .req-details h3 { color: #022d6d; margin-bottom: 5px; font-size: 18px; }
+    .req-details p { font-size: 13px; color: #555; margin: 3px 0; }
+    .req-meta { font-size: 12px; color: #888; margin-top: 8px; font-style: italic; }
+    
+    .action-buttons { display: flex; gap: 10px; }
+    .btn-approve { background-color: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-reject { background-color: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-view { background-color: #022d6d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+    /* ALL EVENTS LIST VIEW */
+    .events-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    
+    .filters { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; }
+    .filter-item { display: flex; flex-direction: column; gap: 5px; }
+    .filter-item label { font-size: 12px; color: #022d6d; font-weight: bold; text-transform: uppercase; }
+    .filter-item select, .filter-item input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 160px; }
+
+    .events-table { width: 100%; border-collapse: collapse; }
+    .events-table th { background-color: #022d6d; color: white; padding: 12px; text-align: left; font-size: 14px; }
+    .events-table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; }
+    .events-table tr:hover { background-color: #f8f9fa; }
+    
+    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; white-space: nowrap; }
+    .bg-Pending-Approval { background-color: #17a2b8; }
+    .bg-Published { background-color: #007bff; }
+    .bg-Registration-Open { background-color: #28a745; }
+    .bg-Registration-Closed { background-color: #dc3545; }
+    .bg-Ongoing { background-color: #ffc107; color: #333; }
+    .bg-Completed { background-color: #6c757d; }
+    .bg-Cancelled { background-color: #343a40; }
+    .bg-Draft { background-color: #6c757d; }
+
+    /* OFFICE BADGE */
+    .office-badge { background: #e8f0fe; color: #022d6d; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; margin-left: 10px; }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 50px; color: #888; }
+
+    /* CUSTOM MODAL STYLES */
+    .custom-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 2000; justify-content: center; align-items: center; }
+    .custom-modal-box { background-color: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); width: 400px; max-width: 90%; overflow: hidden; animation: modalFadeIn 0.3s ease; }
+    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    .custom-modal-header { background-color: #022d6d; color: white; padding: 15px 20px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+    .custom-modal-body { padding: 25px 20px; color: #333; font-size: 14px; line-height: 1.5; }
+    .modal-input { width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+    .custom-modal-footer { padding: 15px 20px; text-align: right; border-top: 1px solid #eee; background-color: #f9f9f9; display: flex; justify-content: flex-end; gap: 10px; }
+    .btn-modal-confirm { background-color: #022d6d; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-modal-cancel { background-color: #ccc; color: #333; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-modal-confirm:hover { background-color: #00328f; }
+    .btn-modal-cancel:hover { background-color: #bbb; }
+
+    footer { background-color: #242424; color: #f36b00; padding: 30px; text-align: center; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Alert Modal -->
+  <div class="custom-modal-overlay" id="alertModal">
+    <div class="custom-modal-box">
+        <div class="custom-modal-header">
+            <span id="alertTitle">Notification</span>
+        </div>
+        <div class="custom-modal-body" id="alertMessage"></div>
+        <div class="custom-modal-footer">
+            <button class="btn-modal-confirm" onclick="closeModal('alertModal')">OK</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Custom Confirm Modal -->
+  <div class="custom-modal-overlay" id="confirmModal">
+    <div class="custom-modal-box">
+        <div class="custom-modal-header">
+            <span id="confirmTitle">Confirm Action</span>
+        </div>
+        <div class="custom-modal-body">
+            <div id="confirmMessage"></div>
+            <input type="text" id="confirmInput" class="modal-input" placeholder="Add remarks (optional)" style="display:none;">
+        </div>
+        <div class="custom-modal-footer">
+            <button class="btn-modal-cancel" onclick="closeModal('confirmModal')">Cancel</button>
+            <button class="btn-modal-confirm" id="btnConfirmAction">Confirm</button>
+        </div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="navbar-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <span>University of Makati - ECP</span>
+    </div>
+
+    <ul class="navbar-links">
+      <li><a href="admin_dashboard.html">Dashboard</a></li>
+      <li><a href="admin_students.html">Students</a></li>
+      <li><a href="#"class="active-link"">Events & Booking</a></li>
+      <li><a href="admin_venues.html">Venues</a></li>
+      <li><a href="admin_post_evaluations.html">Post-Evaluation</a></li>
+      <li><a href="admin_messages.html">Messages</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <a href="admin_account.html" class="account-link">⚙️ Settings</a>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <div style="display:flex; align-items:center;">
+        <span class="page-title">Events Management</span>
+        <span id="adminOfficeBadge" class="office-badge">Loading Access...</span>
+      </div>
+      <button class="btn-view" onclick="refreshData()">Refresh Data</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('calendar')">Calendar View</button>
+      <button class="tab-btn" onclick="switchTab('events')">All Events List</button>
+      <button class="tab-btn" onclick="switchTab('approvals')">Pending Approvals <span id="pendingCount" style="background:red; color:white; border-radius:50%; padding:2px 6px; font-size:12px; display:none;">0</span></button>
+    </div>
+
+    <!-- TAB 1: CALENDAR -->
+    <div id="tab-calendar" class="tab-content active">
+      <div class="calendar-container">
+        <div id='calendar'></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: EVENTS LIST (New) -->
+    <div id="tab-events" class="tab-content">
+        <div class="events-section">
+            <div class="filters">
+                <div class="filter-item">
+                    <label>Status</label>
+                    <select id="filterStatus" onchange="filterEventList()">
+                        <option value="all">All Status</option>
+                        <option value="Pending Approval">Pending Approval</option>
+                        <option value="Published">Published</option>
+                        <option value="Registration Open">Registration Open</option>
+                        <option value="Ongoing">Ongoing</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Event Type</label>
+                    <select id="filterType" onchange="filterEventList()">
+                        <option value="all">All Types</option>
+                        <option value="Academic">Academic</option>
+                        <option value="Social">Social</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Cultural">Cultural</option>
+                        <option value="Seminar">Seminar</option>
+                        <option value="Workshop">Workshop</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Search</label>
+                    <input type="text" id="searchEvent" placeholder="Event name or organizer..." onkeyup="filterEventList()">
+                </div>
+            </div>
+            
+            <table class="events-table">
+                <thead>
+                    <tr>
+                        <th>Event Name</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Organizer</th>
+                        <th>Venue</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="allEventsBody">
+                    <tr><td colspan="7" style="text-align:center;">Loading events...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 3: APPROVALS -->
+    <div id="tab-approvals" class="tab-content">
+      <div id="approvalList" class="approval-list">
+        <div class="empty-state">Loading pending requests...</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 University of Makati - Event Coordination Portal</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+
+  <script>
+    const API_BASE = '../../api';
+    let calendar;
+    let adminDept = '';
+    let allEventsData = [];
+    
+    // Modal Helpers
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    function showCustomAlert(message, title = "Notification") {
+        document.getElementById('alertTitle').textContent = title;
+        document.getElementById('alertMessage').innerHTML = message; 
+        openModal('alertModal');
+    }
+
+    function showCustomConfirm(message, callback, showInput = false) {
+        document.getElementById('confirmTitle').textContent = "Confirm Action";
+        document.getElementById('confirmMessage').textContent = message;
+        
+        const inputEl = document.getElementById('confirmInput');
+        if (showInput) {
+            inputEl.style.display = 'block';
+            inputEl.value = ''; 
+        } else {
+            inputEl.style.display = 'none';
+        }
+
+        const confirmBtn = document.getElementById('btnConfirmAction');
+        const newBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+        
+        newBtn.onclick = function() {
+            const inputValue = showInput ? inputEl.value : null;
+            closeModal('confirmModal');
+            callback(true, inputValue);
+        };
+
+        openModal('confirmModal');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      checkSession();
+      initCalendar();
+      loadApprovals();
+      loadAllEvents();
+    });
+
+    function checkSession() {
+        const session = JSON.parse(localStorage.getItem('user_session'));
+        if (!session || session.user_type !== 'admin') {
+            window.location.href = '../login_signup.html';
+            return;
+        }
+        adminDept = session.department; 
+        document.getElementById('adminOfficeBadge').textContent = `${adminDept} Admin View`;
+    }
+
+    function initCalendar() {
+      var calendarEl = document.getElementById('calendar');
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: '100%', 
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,listWeek'
+        },
+        events: `${API_BASE}/admin_events.php?action=calendar`,
+        eventClick: function(info) {
+            const e = info.event.extendedProps;
+            const start = info.event.start ? info.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD';
+            const end = info.event.end ? info.event.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD';
+            
+            const details = `
+                <div style="text-align:left;">
+                    <h3 style="color:#022d6d; border-bottom:2px solid #f36b00; padding-bottom:5px; margin-top:0;">${info.event.title.replace('✓ ', '')}</h3>
+                    <p><strong>Status:</strong> <span style="background-color:${info.event.backgroundColor}; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">${e.status}</span></p>
+                    <p><strong>📅 Date:</strong> ${info.event.start.toLocaleDateString()}</p>
+                    <p><strong>🕒 Time:</strong> ${start} - ${end}</p>
+                    <p><strong>📍 Venue:</strong> ${e.venue_name || 'TBD'}</p>
+                    <p><strong>🎯 Target:</strong> ${e.target_college || 'All Colleges'}</p>
+                    <p><strong>👥 Capacity:</strong> ${e.attendees_capacity || 'N/A'}</p>
+                    <p><strong>📂 Type:</strong> ${e.event_type || 'General'}</p>
+                </div>
+            `;
+            showCustomAlert(details, 'Event Details');
+        }
+      });
+      calendar.render();
+    }
+
+    async function loadAllEvents() {
+        try {
+            const res = await fetch(`${API_BASE}/admin_events.php?action=all`);
+            const result = await res.json();
+            if (result.success) {
+                allEventsData = result.events;
+                filterEventList();
+            }
+        } catch(e) { console.error("Error loading all events", e); }
+    }
+
+    function filterEventList() {
+        const status = document.getElementById('filterStatus').value;
+        const type = document.getElementById('filterType').value;
+        const search = document.getElementById('searchEvent').value.toLowerCase();
+        
+        const filtered = allEventsData.filter(ev => {
+            const s = ev.status;
+            const matchStatus = status === 'all' || s === status;
+            const matchType = type === 'all' || ev.event_type === type;
+            const matchSearch = ev.event_name.toLowerCase().includes(search) || (ev.org_name && ev.org_name.toLowerCase().includes(search));
+            return matchStatus && matchType && matchSearch;
+        });
+
+        const tbody = document.getElementById('allEventsBody');
+        tbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No events found.</td></tr>';
+            return;
+        }
+
+        filtered.forEach(ev => {
+            const badgeClass = `bg-${ev.status.replace(/ /g, '-')}`;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:bold; color:#022d6d;">${ev.event_name}</td>
+                <td>${new Date(ev.event_date).toLocaleDateString()}</td>
+                <td>${formatTime(ev.start_time)} - ${formatTime(ev.end_time)}</td>
+                <td>${ev.org_name || 'Admin'}</td>
+                <td>${ev.venue_name || '-'}</td>
+                <td><span class="status-badge ${badgeClass}">${ev.status}</span></td>
+                <td><button class="btn-view" onclick="viewDetails(${ev.event_id})">Manage</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function formatTime(timeStr) {
+        if (!timeStr) return '';
+        const [h, m] = timeStr.split(':');
+        const hour = parseInt(h);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const h12 = hour % 12 || 12;
+        return `${h12}:${m} ${ampm}`;
+    }
+
+    async function loadApprovals() {
+        if(!adminDept) return;
+
+        const container = document.getElementById('approvalList');
+        
+        try {
+            const res = await fetch(`${API_BASE}/admin_events.php?action=pending&department=${adminDept}`);
+            const events = await res.json();
+            
+            const countBadge = document.getElementById('pendingCount');
+            if(events.length > 0) {
+                countBadge.textContent = events.length;
+                countBadge.style.display = 'inline-block';
+                container.innerHTML = ''; 
+            } else {
+                countBadge.style.display = 'none';
+                container.innerHTML = `<div class="empty-state">No pending approvals for ${adminDept} at this time.</div>`;
+                return;
+            }
+
+            events.forEach(ev => {
+                const card = document.createElement('div');
+                card.className = 'approval-card';
+                card.innerHTML = `
+                    <div class="req-details">
+                        <h3>${ev.event_name}</h3>
+                        <p><strong>Org:</strong> ${ev.org_name || 'N/A'}</p>
+                        <p><strong>Date:</strong> ${ev.event_date} (${ev.start_time} - ${ev.end_time})</p>
+                        <p><strong>Venue:</strong> ${ev.venue_name}</p>
+                        <div class="req-meta">Requested on: ${ev.created_at || 'N/A'}</div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn-view" onclick="viewDetails(${ev.event_id})">View Details</button>
+                        <button class="btn-approve" onclick="processEvent(${ev.event_id}, 'Approved')">Approve</button>
+                        <button class="btn-reject" onclick="processEvent(${ev.event_id}, 'Rejected')">Reject</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<div class="empty-state" style="color:red">Error loading approvals.</div>';
+        }
+    }
+
+    function processEvent(eventId, status) {
+        showCustomConfirm(
+            `Are you sure you want to ${status.toLowerCase()} this event request?`, 
+            async (confirmed, remarks) => {
+                if (confirmed) {
+                    try {
+                        const res = await fetch(`${API_BASE}/admin_events.php`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                event_id: eventId,
+                                department: adminDept,
+                                status: status,
+                                remarks: remarks 
+                            })
+                        });
+                        
+                        const result = await res.json();
+                        if(result.success) {
+                            showCustomAlert("Success! Request processed.", "Success");
+                            loadApprovals();
+                            loadAllEvents(); // Refresh list too
+                            calendar.refetchEvents(); 
+                        } else {
+                            showCustomAlert("Error: " + result.message, "Error");
+                        }
+                    } catch(e) {
+                        showCustomAlert("Connection error.", "Error");
+                    }
+                }
+            }, 
+            true 
+        );
+    }
+
+    function viewDetails(id) {
+        window.location.href = `admin_event_details.html?id=${id}`;
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        
+        if(event && event.currentTarget) {
+             event.currentTarget.classList.add('active'); 
+        } else {
+             const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.textContent.toLowerCase().includes(tabName));
+             if(btn) btn.classList.add('active');
+        }
+
+        if(tabName === 'calendar') {
+            setTimeout(() => calendar.updateSize(), 200);
+        }
+    }
+
+    function refreshData() {
+        calendar.refetchEvents();
+        loadApprovals();
+        loadAllEvents();
+    }
+
+    function logout() {
+        showCustomConfirm("Are you sure you want to logout?", (confirmed) => {
+            if (confirmed) {
+                localStorage.removeItem('user_session');
+                window.location.href = "../login_signup.html";
+            }
+        });
+    }
+  </script>
+</body>
+</html>

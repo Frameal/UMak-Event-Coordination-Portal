@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University of Makati - Edit Event</title>
+  <style>
+    /* GLOBAL */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Century Gothic', sans-serif; }
+    body { background-color: #f4f5f7; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+    /* ... (Same styles as previous response) ... */
+    nav { background-color: #022d6d; color: white; display: flex; align-items: center; justify-content: space-between; padding: 10px 30px; height: 60px; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; }
+    .nav-left { display: flex; align-items: center; gap: 15px; }
+    nav img { height: 35px; margin-left: 10px; }
+    .nav-title { display: flex; flex-direction: column; line-height: 1.2; }
+    .nav-title .main-title { font-size: 16px; font-weight: bold; }
+    .nav-title .org-name { font-size: 12px; color: #f36b00; font-weight: normal; }
+
+    .sidebar { position: fixed; top: 60px; left: 0; width: 220px; background-color: white; bottom: 0; border-right: 1px solid #ddd; padding-top: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+    .sidebar a { display: block; padding: 12px 20px; color: #022d6d; text-decoration: none; font-size: 14px; }
+    .sidebar a:hover, .sidebar a.active { background-color: #022d6d; color: white; border-radius: 4px; margin: 0 10px; }
+    .logout-btn { background-color: #f30000; color: white; border: none; width: 80%; padding: 10px; margin: 20px auto; border-radius: 3px; cursor: pointer; }
+
+    .main-content { margin-left: 230px; margin-top: 80px; padding: 30px; flex: 1; }
+    .back-btn { background-color: #6c757d; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin-bottom: 20px; }
+    
+    .form-container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); max-width: 1000px; }
+    .form-section { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+    .form-section h3 { color: #022d6d; font-size: 18px; margin-bottom: 15px; border-left: 4px solid #f36b00; padding-left: 10px; }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-grid.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+    .form-group label { color: #022d6d; font-weight: bold; font-size: 14px; }
+    .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .form-group textarea { min-height: 100px; resize: vertical; }
+
+    .req-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; }
+    .req-item { display: flex; align-items: flex-start; gap: 10px; }
+    .req-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; }
+    .req-details { font-size: 12px; color: #666; margin-top: 2px; display: block; }
+
+    .current-image { max-width: 300px; max-height: 200px; border-radius: 8px; margin-bottom: 10px; display: block; }
+    .image-upload-container { border: 2px dashed #ddd; padding: 20px; text-align: center; cursor: pointer; background: #f9f9f9; border-radius: 8px; }
+    .image-upload-container:hover { border-color: #022d6d; }
+    #previewImage { max-width: 100%; max-height: 300px; display: none; margin-top: 10px; border-radius: 8px; }
+
+    .form-actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; }
+    .btn { padding: 12px 30px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
+    .btn-primary { background-color: #022d6d; color: white; }
+    .btn-cancel { background-color: #6c757d; color: white; }
+
+    .custom-alert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+    .custom-alert-overlay.show { display: flex; }
+    .custom-alert-box { background: white; border-radius: 8px; width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); overflow: hidden; }
+    .custom-alert-header { background: #022d6d; color: white; padding: 15px; font-weight: bold; display: flex; gap: 10px; }
+    .custom-alert-body { padding: 20px; color: #333; }
+    .custom-alert-footer { padding: 10px 20px; text-align: right; border-top: 1px solid #ddd; }
+    .btn-alert { background: #022d6d; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; }
+    
+    footer { background-color: #242424; color: #f36b00; display: flex; justify-content: space-around; align-items: flex-start; padding: 40px 80px; font-size: 16px; flex-wrap: wrap; margin-top: 40px; }
+    footer .footer-section { max-width: 400px; margin-left: 80px; }
+    footer h4 { color: #f36b00; margin-bottom: 10px; }
+    footer p, footer a { color: white; font-size: 14px; line-height: 1.6; text-decoration: none; }
+    footer a:hover { color: #f36b00; text-decoration: underline; }
+
+    @media (max-width: 768px) {
+        .main-content { margin-left: 0; padding: 20px; }
+        .sidebar { display: none; }
+        .form-grid, .req-grid { grid-template-columns: 1fr; }
+    }
+    .nav-right .account-link { color: #ccc; font-size: 12px; text-decoration: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; transition: 0.3s; }
+    .nav-right .account-link:hover { color: white; border-color: white; }
+  </style>
+</head>
+<body>
+
+  <!-- ALERT MODAL -->
+  <div class="custom-alert-overlay" id="customAlertOverlay">
+    <div class="custom-alert-box">
+      <div class="custom-alert-header"><span id="alertIcon">ℹ️</span><span id="alertTitle">Message</span></div>
+      <div class="custom-alert-body" id="alertBody"></div>
+      <div class="custom-alert-footer" id="alertFooter"></div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-left">
+      <img src="../../images/UMAK LOGO.png" alt="UMak Logo">
+      <div class="nav-title">
+        <span class="main-title">University of Makati - ECP</span>
+        <span class="org-name" id="orgNameDisplay">Loading...</span>
+      </div>
+    </div>
+    <div class="nav-right">
+        <a href="org_account.html" class="account-link">⚙️ Settings</a>
+    </div>
+  </nav>
+
+
+  <div class="sidebar">
+    <div>
+      <a href="org_dashboard.html">Dashboard</a>
+      <a href="org_events.html" class="active">My Events</a>
+      <a href="org_create_event.html">Create Event</a>
+      <a href="org_scan_qr.html">Scan QR Code</a>
+      <a href="org_evaluations.html">Evaluations</a>
+      <a href="org_messages.html">Messages</a>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="main-content">
+    <button class="back-btn" onclick="goBack()">← Back to Event Details</button>
+
+    <div class="form-container">
+      <h2 style="color:#022d6d; margin-bottom:20px;">Edit Event</h2>
+      
+      <form id="editEventForm" enctype="multipart/form-data">
+        <input type="hidden" name="event_id" id="eventId">
+        <input type="hidden" name="org_id" id="orgIdInput">
+
+        <!-- I. EVENT DETAILS -->
+        <div class="form-section">
+          <h3>I. Basic Information</h3>
+          <div class="form-grid single">
+            <div class="form-group">
+              <label>Event Name *</label>
+              <input type="text" name="event_name" id="eventName" required>
+            </div>
+            <div class="form-group">
+              <label>Description / Objective *</label>
+              <textarea name="description" id="eventDescription" required></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Banner Image</h3>
+          <div class="form-group">
+            <label>Current Banner</label>
+            <img id="currentImage" src="" class="current-image" alt="No image">
+            
+            <label>Update Banner (Optional)</label>
+            <div class="image-upload-container" onclick="document.getElementById('imageInput').click()">
+              <p>Click to Upload New Image</p>
+            </div>
+            <input type="file" id="imageInput" name="banner_image" accept="image/*" style="display:none" onchange="previewFile()">
+            <img id="previewImage" src="">
+          </div>
+        </div>
+
+        <!-- LOGISTICS -->
+        <div class="form-section">
+          <h3>Logistics & Schedule</h3>
+          <div class="form-grid">
+            <div class="form-group">
+                <label>Date *</label>
+                <input type="date" name="event_date" id="eventDate" required>
+            </div>
+            <div class="form-group">
+                <label>Venue *</label>
+                <select name="venue_id" id="eventVenue" required>
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Start Time *</label>
+                <input type="time" name="start_time" id="startTime" required>
+            </div>
+            <div class="form-group">
+                <label>End Time *</label>
+                <input type="time" name="end_time" id="endTime" required>
+            </div>
+          </div>
+          
+          <h4 style="margin-top:15px; color:#022d6d;">Registration Window (Optional)</h4>
+          <div class="form-grid">
+            <div class="form-group">
+                <label>Start Registration</label>
+                <input type="datetime-local" name="registration_start" id="regStart">
+            </div>
+            <div class="form-group">
+                <label>End Registration</label>
+                <input type="datetime-local" name="registration_end" id="regEnd">
+            </div>
+          </div>
+        </div>
+
+        <!-- II. OFFICE REQUIREMENTS & LOGISTICS -->
+        <div class="form-section">
+            <h3>II. Office Requirements & Logistics</h3>
+            <p style="font-size:12px; color:#666; margin-bottom:15px;">Modify requested items if needed.</p>
+            
+            <div class="req-grid">
+                <!-- SPMO -->
+                <div class="req-item">
+                    <input type="checkbox" name="req_chairs_check" id="checkChairs" onchange="toggleInput('req_chairs_qty', this)">
+                    <div>
+                        <label>Extra Chairs (SPMO)</label>
+                        <input type="number" name="req_chairs_qty" id="req_chairs_qty" placeholder="Qty" style="width:80px; padding:5px; display:none; margin-top:5px;">
+                    </div>
+                </div>
+                <div class="req-item">
+                    <input type="checkbox" name="req_tables_check" id="checkTables" onchange="toggleInput('req_tables_qty', this)">
+                    <div>
+                        <label>Extra Tables (SPMO)</label>
+                        <input type="number" name="req_tables_qty" id="req_tables_qty" placeholder="Qty" style="width:80px; padding:5px; display:none; margin-top:5px;">
+                    </div>
+                </div>
+
+                <!-- CIT -->
+                <div class="req-item">
+                    <input type="checkbox" name="req_internet" id="checkInternet">
+                    <div>
+                        <label>Internet/Wi-Fi (CIT)</label>
+                        <span class="req-details">For livestream/guests</span>
+                    </div>
+                </div>
+                <div class="req-item">
+                    <input type="checkbox" name="req_projector" id="checkProjector">
+                    <div>
+                        <label>Projector/LED Wall (CIT)</label>
+                        <span class="req-details">Multimedia support</span>
+                    </div>
+                </div>
+
+                <!-- GSO -->
+                <div class="req-item">
+                    <input type="checkbox" name="req_sound" id="checkSound">
+                    <div>
+                        <label>Sound System (GSO)</label>
+                        <span class="req-details">Microphones, Speakers</span>
+                    </div>
+                </div>
+                <div class="req-item">
+                    <input type="checkbox" name="req_cleaning" id="checkCleaning">
+                    <div>
+                        <label>Janitorial (GSO)</label>
+                        <span class="req-details">Pre/Post Cleaning</span>
+                    </div>
+                </div>
+
+                <!-- OHSO / Security -->
+                <div class="req-item">
+                    <input type="checkbox" name="req_medical" id="checkMedical">
+                    <div>
+                        <label>Medical Team (OHSO)</label>
+                        <span class="req-details">First Aid Standby</span>
+                    </div>
+                </div>
+                <div class="req-item">
+                    <input type="checkbox" name="req_parking" id="checkParking">
+                    <div>
+                        <label>Parking Space (OHSO)</label>
+                        <span class="req-details">For Guests/VIPs</span>
+                    </div>
+                </div>
+                
+                <!-- Food -->
+                <div class="req-item">
+                    <input type="checkbox" name="req_food" id="checkFood">
+                    <div>
+                        <label>Food/Catering (OHSO)</label>
+                        <span class="req-details">Permit needed</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:15px;">
+                <label>Logistics Remarks</label>
+                <textarea name="req_remarks" id="reqRemarks" rows="2" placeholder="Specific details (e.g., '3 Wireless Mics needed')"></textarea>
+            </div>
+        </div>
+
+        <!-- III. FINANCIAL -->
+        <div class="form-section">
+            <h3>III. Financial</h3>
+            <div class="form-group">
+                <label>Rental Fee (Accounting)</label>
+                <input type="number" name="rental_fee" id="rentalFee" placeholder="Leave blank if Student Event / Free">
+            </div>
+        </div>
+
+        <!-- TARGET AUDIENCE & SETTINGS -->
+        <div class="form-section">
+          <h3>Target Audience & Settings</h3>
+          <div class="form-grid">
+            <div class="form-group">
+                <label>Capacity *</label>
+                <input type="number" name="attendees_capacity" id="capacity" required>
+            </div>
+            <div class="form-group">
+                <label>Status *</label>
+                <select name="status" id="eventStatus" required>
+                    <option value="Pending Approval">To be Approved (Submit to Offices)</option>
+                    <option value="Draft">Draft (Save Only)</option>
+                    <option value="Published">Published (Ready)</option>
+                    <option value="Registration Open">Registration Open</option>
+                    <option value="Registration Closed">Registration Closed</option>
+                    <option value="Ongoing">Ongoing</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <select name="event_type" id="eventType">
+                    <option value="Academic">Academic</option>
+                    <option value="Social">Social</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Cultural">Cultural</option>
+                    <option value="Seminar">Seminar</option>
+                    <option value="Workshop">Workshop</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Target College</label>
+                <select name="target_college" id="targetCollege">
+                    <option value="All">All</option>
+                    <option value="CCIS">CCIS</option>
+                    <option value="CBFS">CBFS</option>
+                    <option value="CHK">CHK</option>
+                    <option value="CLAS">CLAS</option>
+                    <option value="CITE">CITE</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Target Year</label>
+                <select name="target_year_level" id="targetYear">
+                    <option value="All">All</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" name="requires_evaluation" id="requiresEval" value="1" style="width:auto;"> Require Evaluation
+                </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-cancel" onclick="goBack()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-section">
+      <h4>About ECP</h4>
+      <p>
+        The Event Coordination Portal serves as the central management system for events
+        organized by the colleges of the University of Makati.
+      </p>
+    </div>
+    <div class="footer-section">
+      <h4>Links</h4>
+      <a href="https://www.umak.edu.ph/" target="_blank">University of Makati</a>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = '../../api';
+    const orgId = localStorage.getItem('orgId');
+    const orgName = localStorage.getItem('orgName');
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get('id');
+
+    if(!orgId) window.location.href = '../login_signup.html';
+    document.getElementById('orgNameDisplay').textContent = orgName;
+    document.getElementById('eventId').value = eventId;
+    document.getElementById('orgIdInput').value = orgId;
+
+    // --- ALERT ---
+    function customAlert(msg, type='info') {
+        const overlay = document.getElementById('customAlertOverlay');
+        const body = document.getElementById('alertBody');
+        const footer = document.getElementById('alertFooter');
+        body.textContent = msg;
+        overlay.classList.add('show');
+        footer.innerHTML = `<button class="btn-alert" onclick="document.getElementById('customAlertOverlay').classList.remove('show')">OK</button>`;
+    }
+
+    function toggleInput(inputId, checkbox) {
+        const input = document.getElementById(inputId);
+        input.style.display = checkbox.checked ? 'block' : 'none';
+        if(!checkbox.checked) input.value = '';
+    }
+
+    // --- LOAD DATA ---
+    async function init() {
+        // 1. Load Venues
+        const venueRes = await fetch(`${API_BASE}/student_venues.php`);
+        const venueData = await venueRes.json();
+        const vSel = document.getElementById('eventVenue');
+        venueData.venues.forEach(v => {
+            vSel.innerHTML += `<option value="${v.venue_id}">${v.venue_name}</option>`;
+        });
+
+        // 2. Load Event Data
+        const res = await fetch(`${API_BASE}/org_event_details.php?event_id=${eventId}&org_id=${orgId}`);
+        const data = await res.json();
+
+        if(data.success) {
+            const e = data.event;
+            const r = data.requirements || {};
+
+            // Basic Info
+            document.getElementById('eventName').value = e.event_name;
+            document.getElementById('eventDescription').value = e.description;
+            document.getElementById('eventDate').value = e.event_date;
+            document.getElementById('startTime').value = e.start_time;
+            document.getElementById('endTime').value = e.end_time;
+            document.getElementById('regStart').value = e.registration_start ? e.registration_start.replace(' ', 'T') : '';
+            document.getElementById('regEnd').value = e.registration_end ? e.registration_end.replace(' ', 'T') : '';
+
+            document.getElementById('eventVenue').value = e.venue_id;
+            document.getElementById('capacity').value = e.attendees_capacity;
+            
+            // Handle Status
+            document.getElementById('eventStatus').value = e.status;
+            
+            document.getElementById('eventType').value = e.event_type;
+            document.getElementById('targetCollege').value = e.target_college;
+            document.getElementById('targetYear').value = e.target_year_level;
+            document.getElementById('requiresEval').checked = e.requires_evaluation == 1;
+            document.getElementById('rentalFee').value = e.rental_fee;
+
+            // Requirements
+            setReq('checkInternet', r.needs_internet);
+            setReq('checkProjector', r.needs_projector);
+            setReq('checkSound', r.needs_sound_system);
+            setReq('checkCleaning', r.needs_cleaning);
+            setReq('checkMedical', r.needs_medical);
+            setReq('checkParking', r.needs_parking);
+            setReq('checkFood', r.has_food);
+            document.getElementById('reqRemarks').value = r.remarks || '';
+
+            // Quantity Requirements
+            if(r.needs_chairs > 0) {
+                document.getElementById('checkChairs').checked = true;
+                const qty = document.getElementById('req_chairs_qty');
+                qty.style.display = 'block';
+                qty.value = r.needs_chairs;
+            }
+            if(r.needs_tables > 0) {
+                document.getElementById('checkTables').checked = true;
+                const qty = document.getElementById('req_tables_qty');
+                qty.style.display = 'block';
+                qty.value = r.needs_tables;
+            }
+
+            if(e.banner_image) document.getElementById('currentImage').src = e.banner_image;
+        } else {
+            customAlert("Failed to load event data: " + data.message, 'error');
+        }
+    }
+
+    function setReq(id, val) {
+        if(document.getElementById(id)) document.getElementById(id).checked = (val == 1);
+    }
+
+    function previewFile() {
+        const file = document.getElementById('imageInput').files[0];
+        const preview = document.getElementById('previewImage');
+        if(file) {
+            const reader = new FileReader();
+            reader.onloadend = () => { preview.src = reader.result; preview.style.display = 'block'; }
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // --- SUBMIT ---
+    document.getElementById('editEventForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        
+        try {
+            const res = await fetch(`${API_BASE}/org_update_event.php`, { method: 'POST', body: formData });
+            const data = await res.json();
+            
+            if(data.success) {
+                customAlert("Event updated successfully!", 'success');
+                setTimeout(() => window.location.href = `org_event_details.html?id=${eventId}`, 1500);
+            } else {
+                customAlert("Update failed: " + data.message, 'error');
+            }
+        } catch(err) { customAlert("Connection Error", 'error'); }
+    });
+
+    function goBack() { window.location.href = `org_event_details.html?id=${eventId}`; }
+    function logout() {
+        if(confirm("Logout?")) {
+            localStorage.removeItem('orgId');
+            window.location.href = '../login_signup.html';
+        }
+    }
+
+    init();
+  </script>
+</body>
+</html>

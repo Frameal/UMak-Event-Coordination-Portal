@@ -1,137 +1,214 @@
 <?php
-// Enable error reporting for debugging
+// File: api/students.php
+session_start();
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0); 
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 
 include_once '../config/database.php';
 
 $database = new Database();
 $db = $database->getConnection();
 
-if ($db === null) {
-    echo json_encode(["error" => "Database connection failed"]);
-    exit();
-}
-
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Log the request method and incoming data
-file_put_contents('debug.log', "Method: " . $method . "\n", FILE_APPEND);
-file_put_contents('debug.log', "Raw input: " . file_get_contents("php://input") . "\n", FILE_APPEND);
+// Helper: Strong Password Check
+function isStrongPassword($password) {
+    // Min 8 chars, 1 upper, 1 number, 1 special char
+    return preg_match('/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password);
+}
+
+// Helper function to send JSON response
+function sendResponse($code, $success, $message, $data = null) {
+    http_response_code($code);
+    $response = ["success" => $success, "message" => $message];
+    if ($data) $response = array_merge($response, $data);
+    echo json_encode($response);
+}
 
 try {
     switch($method) {
         case 'GET':
             if (isset($_GET['id'])) {
-                $query = "SELECT * FROM students WHERE student_id = ?";
+                // Get single student details
+                $query = "SELECT * FROM students WHERE student_id = ? LIMIT 1";
                 $stmt = $db->prepare($query);
                 $stmt->bindParam(1, $_GET['id']);
                 $stmt->execute();
                 $student = $stmt->fetch(PDO::FETCH_ASSOC);
-                echo json_encode($student);
+                
+                if ($student) {
+                    unset($student['password']); 
+                    echo json_encode(["success" => true, "data" => $student]);
+                } else {
+                    sendResponse(404, false, "Student not found");
+                }
             } else {
+                // Get list of all students
                 $query = "SELECT * FROM students ORDER BY lastname, firstname";
                 $stmt = $db->prepare($query);
                 $stmt->execute();
                 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Remove passwords
+                foreach($students as &$s) {
+                    unset($s['password']);
+                }
                 echo json_encode($students);
             }
             break;
             
         case 'POST':
-            // Debug: Log that we're in POST section
-            file_put_contents('debug.log', "Entering POST section\n", FILE_APPEND);
-            
             $input = file_get_contents("php://input");
-            file_put_contents('debug.log', "Input received: " . $input . "\n", FILE_APPEND);
-            
             $data = json_decode($input, true);
-            file_put_contents('debug.log', "Decoded data: " . print_r($data, true) . "\n", FILE_APPEND);
             
             if (!$data) {
-                $error_msg = "No data received or invalid JSON. JSON Error: " . json_last_error_msg();
-                file_put_contents('debug.log', $error_msg . "\n", FILE_APPEND);
-                echo json_encode(["message" => $error_msg]);
+                sendResponse(400, false, "No data received or invalid JSON");
                 exit();
             }
-            
-            // Check required fields
-            $required_fields = ['student_number', 'lastname', 'firstname', 'email', 'gender'];
-            $missing_fields = [];
-            
-            foreach ($required_fields as $field) {
-                if (empty($data[$field])) {
-                    $missing_fields[] = $field;
+
+            // --- OTP VERIFICATION ---
+            if (isset($data['otp'])) {
+                $userOtp = $data['otp'];
+                $sessionOtp = $_SESSION['signup_otp'] ?? '';
+                $sessionEmail = $_SESSION['signup_email'] ?? '';
+
+                if (empty($userOtp) || $userOtp != $sessionOtp) {
+                    sendResponse(400, false, "Invalid or expired OTP.");
+                    exit();
+                }
+
+                if ($data['email'] !== $sessionEmail) {
+                    sendResponse(400, false, "Email does not match the verified email.");
+                    exit();
                 }
             }
             
-            if (!empty($missing_fields)) {
-                $error_msg = "Missing required fields: " . implode(', ', $missing_fields);
-                file_put_contents('debug.log', $error_msg . "\n", FILE_APPEND);
-                echo json_encode(["message" => $error_msg]);
+            // Validate Password Strength
+            if (!isStrongPassword($data['password'])) {
+                sendResponse(400, false, "Password is too weak. Must be 8+ characters, include uppercase, number, and special char.");
+                exit();
+            }
+
+            $required_fields = ['studentnumber', 'lastname', 'firstname', 'email', 'gender', 'password'];
+            foreach ($required_fields as $field) {
+                if (empty($data[$field])) {
+                    sendResponse(400, false, "Missing required fields"); exit();
+                }
+            }
+            
+            $checkQuery = "SELECT student_id FROM students WHERE student_number = ? OR email = ?";
+            $checkStmt = $db->prepare($checkQuery);
+            $checkStmt->execute([$data['studentnumber'], $data['email']]);
+            
+            if ($checkStmt->rowCount() > 0) {
+                sendResponse(409, false, "Student Number or Email already registered.");
                 exit();
             }
             
-            // Prepare the query
-            $query = "INSERT INTO students (student_number, lastname, firstname, middlename, email, gender, year_level, course, contact_number) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
-            file_put_contents('debug.log', "Query: " . $query . "\n", FILE_APPEND);
+            $query = "INSERT INTO students (student_number, lastname, firstname, middlename, email, gender, year_level, section, college, course, contact_number, password, is_active, created_at) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW())";
             
             $stmt = $db->prepare($query);
+            $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
             
             $params = [
-                $data['student_number'],
-                $data['lastname'],
-                $data['firstname'],
-                $data['middlename'] ?? null,
-                $data['email'],
-                $data['gender'],
-                $data['year_level'] ?? null,
-                $data['course'] ?? null,
-                $data['contact_number'] ?? null
+                $data['studentnumber'], $data['lastname'], $data['firstname'], $data['middleinitial'] ?? null, 
+                $data['email'], $data['gender'], $data['yearlevel'] ?? null,
+                $data['section'] ?? null, $data['college'] ?? null,
+                $data['course'] ?? null, $data['contactnumber'] ?? null,
+                $hashedPassword
             ];
             
-            file_put_contents('debug.log', "Parameters: " . print_r($params, true) . "\n", FILE_APPEND);
-            
             if($stmt->execute($params)) {
-                $success_msg = "Student created successfully with ID: " . $db->lastInsertId();
-                file_put_contents('debug.log', $success_msg . "\n", FILE_APPEND);
-                echo json_encode(["message" => "Student created successfully", "id" => $db->lastInsertId()]);
+                unset($_SESSION['signup_otp']);
+                unset($_SESSION['signup_email']);
+                sendResponse(201, true, "Student registered successfully", ["id" => $db->lastInsertId()]);
             } else {
                 $error = $stmt->errorInfo();
-                $error_msg = "Execute failed: " . $error[2];
-                file_put_contents('debug.log', $error_msg . "\n", FILE_APPEND);
-                file_put_contents('debug.log', "Full error info: " . print_r($error, true) . "\n", FILE_APPEND);
-                echo json_encode(["message" => "Unable to create student: " . $error[2]]);
+                sendResponse(500, false, "Database error: " . $error[2]);
+            }
+            break;
+            
+        case 'PUT':
+            $data = json_decode(file_get_contents("php://input"), true);
+            
+            if (!isset($data['student_id'])) {
+                sendResponse(400, false, "Student ID is required for update");
+                exit();
+            }
+            
+            $allowed = ['lastname', 'firstname', 'middlename', 'email', 'gender', 'college', 'year_level', 'section', 'course', 'contact_number', 'is_active'];
+            $fields = [];
+            $values = [];
+            
+            // Password update check
+            if (isset($data['password']) && !empty($data['password'])) {
+                 if (!isStrongPassword($data['password'])) {
+                    sendResponse(400, false, "New password is too weak.");
+                    exit();
+                }
+                $fields[] = "password = ?";
+                $values[] = password_hash($data['password'], PASSWORD_DEFAULT);
+            }
+
+            foreach ($allowed as $field) {
+                if (isset($data[$field])) {
+                    $fields[] = "$field = ?";
+                    $values[] = $data[$field];
+                }
+            }
+            
+            if (empty($fields)) {
+                sendResponse(400, false, "No fields to update");
+                exit();
+            }
+            
+            $values[] = $data['student_id'];
+            $stmt = $db->prepare("UPDATE students SET " . implode(', ', $fields) . " WHERE student_id = ?");
+            
+            if($stmt->execute($values)) {
+                sendResponse(200, true, "Student updated successfully");
+            } else {
+                sendResponse(500, false, "Failed to update student");
             }
             break;
             
         case 'DELETE':
             if (isset($_GET['id'])) {
+                $check = $db->prepare("SELECT student_id FROM students WHERE student_id = ?");
+                $check->execute([$_GET['id']]);
+                if(!$check->fetch()) {
+                    sendResponse(404, false, "Student not found");
+                    exit();
+                }
+
                 $query = "DELETE FROM students WHERE student_id = ?";
                 $stmt = $db->prepare($query);
                 
                 if($stmt->execute([$_GET['id']])) {
-                    echo json_encode(["message" => "Student deleted successfully"]);
+                    sendResponse(200, true, "Student deleted successfully");
                 } else {
-                    echo json_encode(["message" => "Unable to delete student"]);
+                    sendResponse(500, false, "Unable to delete student (check foreign key constraints)");
                 }
+            } else {
+                sendResponse(400, false, "ID required for deletion");
             }
             break;
             
         default:
-            echo json_encode(["message" => "Method not allowed: " . $method]);
+            sendResponse(405, false, "Method not allowed: " . $method);
             break;
     }
 } catch (Exception $e) {
-    $error_msg = "Exception: " . $e->getMessage();
-    file_put_contents('debug.log', $error_msg . "\n", FILE_APPEND);
-    echo json_encode(["message" => "Database error: " . $e->getMessage()]);
+    sendResponse(500, false, "Server error: " . $e->getMessage());
 }
 ?>
