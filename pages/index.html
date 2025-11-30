@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>University of Makati - ECP</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Century Gothic";
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: #f4f5f7;
+    }
+
+    section {
+      scroll-margin-top: 90px;
+    }
+
+    /* NAVIGATION BAR */
+    nav {
+      background-color: #022d6d;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 40px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    nav img {
+      height: 40px;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 16px;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 35px;
+      font-size: 15px;
+      margin-left: auto;
+      margin-right: 40px;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 4px;
+      transition: 0.3s;
+    }
+
+    .nav-links a:hover {
+      background-color: #f36b00;
+    }
+
+    .signup-btn {
+      background-color: #f36b00;
+      color: white;
+      padding: 10px 22px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .signup-btn:hover {
+      background-color: #c75b00;
+      transform: scale(1.05);
+    }
+
+    /* HERO SECTION */
+    .hero {
+      background: url('../images/UMAK-BACKGROUND.jpg') center/cover no-repeat;
+      min-height: 350px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 20px;
+    }
+
+    .hero-box {
+      background: white;
+      padding: 70px 80px;
+      border-radius: 10px;
+      max-width: 820px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    /* HERO TEXT */
+    .hero-box h3 {
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      font-size: 18px;
+      color: #022d6d;
+      margin-top: -20px;
+    }
+
+    .hero-box h1 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      color: #022d6d;
+      margin-top: 20px;
+    }
+
+    .hero-box p {
+      font-size: 15px;
+      margin-top: 30px;
+      line-height: 1.6;
+      color: #555;
+    
+    }
+
+    /* SECTION CONTAINERS */
+    .section-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin: 40px 0;
+    }
+
+    .section-container {
+      background: white;
+      width: 85%;
+      padding: 35px 45px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    /* SECTION CONTAINER HOVER POP */
+    .section-container:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.20);
+    }
+
+    .section-title {
+      text-align: center;
+      color: #022d6d;
+      font-size: 26px;
+      margin-bottom: 25px;
+      font-weight: bold;
+    }
+
+    /* ABOUT SECTION */
+    .about-text {
+      font-size: 16px;
+      color: #333;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* WHY CHOOSE US */
+    .features {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 25px;
+      text-align: center;
+    }
+
+    .feature-box {
+      width: 250px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    /* POP EFFECT */
+    .feature-box:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+    }
+
+    .feature-box i {
+      font-size: 35px;
+      color: #f36b00;
+      margin-bottom: 12px;
+    }
+
+    .feature-title {
+      font-size: 17px;
+      color: #022d6d;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: #444;
+    }
+
+    /* HOW IT WORKS */
+    .steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 25px;
+      justify-content: center;
+    }
+
+    .step-box {
+      width: 280px;
+      background: #fbfbfb;
+      border-radius: 8px;
+      padding: 25px;
+      border: 1px solid #ddd;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* POP EFFECT */
+    .step-box:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+    }
+
+    .step-box i {
+      font-size: 35px;
+      color: #f36b00;
+      margin-bottom: 12px;
+    }
+
+    .step-title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #022d6d;
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.5;
+    }
+
+    /* FOOTER */
+    footer {
+      background-color: #242424;
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    footer img {
+      height: 60px;
+      margin-bottom: 10px;
+    }
+
+    footer h3 {
+      color: #f36b00;
+      margin-bottom: 5px;
+    }
+
+    footer p {
+      color: #ccc;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    footer .copyright {
+      margin-top: 15px;
+      font-size: 13px;
+      color: #ccc;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav>
+    <div class="nav-left">
+      <img src="../images/UMAK LOGO.png" alt="UMAK Logo">
+      <span>University of Makati - ECP</span>
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#choose">Why Choose Us</a></li>
+        <li><a href="#how">How It Works</a></li>
+    </ul>
+
+<button class="signup-btn" onclick="window.location.href='login_signup.html'">LOG IN</button>
+    
+  </nav>
+
+  <!-- HOME / HERO -->
+  <section id="home" class="hero">
+    <div class="hero-box">
+      <h3>UNIVERSITY OF MAKATI – EVENT COORDINATION PORTAL</h3>
+      <h1>Discover, Join, and Celebrate Campus Life</h1>
+      <p>Find events you love, register with one click, and keep track of every UMAK event so you never miss what’s happening on campus.</p>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section-wrapper">
+    <div class="section-container">
+      <h2 class="section-title">About UMAK ECP</h2>
+      <p class="about-text">
+        The Event Coordination Portal serves as the central management system for events organized by the colleges of the University of Makati. 
+        It intends to oversee event operations, track student participation, and maintain an updated event calendar.
+      </p>
+    </div>
+  </section>
+
+  <!-- WHY CHOOSE US -->
+  <section id="choose" class="section-wrapper">
+    <div class="section-container">
+      <h2 class="section-title">Why Choose Us?</h2>
+
+      <div class="features">
+        <div class="feature-box">
+          <i class="fa-solid fa-network-wired"></i>
+          <div class="feature-title">Centralized Event Hub</div>
+          <div class="feature-desc">All events and venue details in one place.</div>
+        </div>
+
+        <div class="feature-box">
+          <i class="fa-solid fa-bolt"></i>
+          <div class="feature-title">Fast & Convenient</div>
+          <div class="feature-desc">No long forms and no confusion.</div>
+        </div>
+
+        <div class="feature-box">
+          <i class="fa-solid fa-shield-halved"></i>
+          <div class="feature-title">Secure Service</div>
+          <div class="feature-desc">Safe, protected, and reliable.</div>
+        </div>
+
+        <div class="feature-box">
+          <i class="fa-solid fa-file-signature"></i>
+          <div class="feature-title">Transparent Coordination</div>
+          <div class="feature-desc">Clear steps and smooth approvals.</div>
+        </div>
+
+        <div class="feature-box">
+          <i class="fa-solid fa-users"></i>
+          <div class="feature-title">For UMAK Students</div>
+          <div class="feature-desc">Simple and campus-focused.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="section-wrapper">
+    <div class="section-container">
+      <h2 class="section-title">How It Works</h2>
+
+      <div class="steps">
+        <div class="step-box">
+          <i class="fa-solid fa-search"></i>
+          <div class="step-title">1. Explore Events</div>
+          <div class="step-desc">Browse the event calendar to see what’s happening at UMAK.</div>
+        </div>
+
+        <div class="step-box">
+          <i class="fa-solid fa-clipboard-check"></i>
+          <div class="step-title">2. Register or Submit Requests</div>
+          <div class="step-desc">Students join events instantly; organizations submit proposals for approval.</div>
+        </div>
+
+        <div class="step-box">
+          <i class="fa-solid fa-check-double"></i>
+          <div class="step-title">3. Join & Participate</div>
+          <div class="step-desc">Attend events with digital confirmation—everything tracked automatically.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <img src="../images/UMAK LOGO.png" alt="UMAK Logo">
+    <h3>UNIVERSITY OF MAKATI</h3>
+    <p>J.P. Rizal Extension, West Rembo, Makati City</p>
+    
+
+    <div class="copyright">
+      © 2025 University of Makati. All rights reserved.
+      <p>Event Coordination Portal</p>
+    </div>
+  </footer>
+
+</body>
+</html>
