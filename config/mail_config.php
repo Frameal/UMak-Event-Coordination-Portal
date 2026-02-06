@@ -17,8 +17,8 @@ function sendEmail($to, $subject, $body) {
         $mail->SMTPAuth   = true;
         
         // --- CHANGE THESE TWO LINES ONLY ---
-        $mail->Username   = 'jframil.a12139502@umak.edu.ph'; // Your full Gmail address
-        $mail->Password   = 'btpg rrfq exuj vvkw';         // The 16-digit App Password (remove spaces if needed)
+        $mail->Username   = ''; // Your full Gmail address
+        $mail->Password   = '';         // The 16-digit App Password (remove spaces if needed)
         // -----------------------------------
 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
@@ -56,4 +56,5 @@ function sendEmail($to, $subject, $body) {
         return false;
     }
 }
+
 ?>
